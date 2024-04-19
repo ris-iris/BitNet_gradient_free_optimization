@@ -9,6 +9,7 @@ from model.bit_linear import BitLinear, RMSNorm
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+
 class BitFeedForward(nn.Module):
     """
     BitFeedForward module performs feed-forward operations on the input tensor.
@@ -24,16 +25,16 @@ class BitFeedForward(nn.Module):
     """
 
     def __init__(
-        self,
-        dim: int,
-        dim_out: Optional[int] = None,
-        mult: int = 4,
-        swish: bool = False,
-        post_act_ln: bool = False,
-        dropout: float = 0.0,
-        no_bias: bool = False,
-        *args,
-        **kwargs
+            self,
+            dim: int,
+            dim_out: Optional[int] = None,
+            mult: int = 4,
+            swish: bool = False,
+            post_act_ln: bool = False,
+            dropout: float = 0.0,
+            no_bias: bool = False,
+            *args,
+            **kwargs
     ):
         super().__init__()
         inner_dim = int(dim * mult)
@@ -56,7 +57,6 @@ class BitFeedForward(nn.Module):
         return self.ff(x)
 
 
-
 class BitMHA(nn.Module):
     # slightly changed implementation from https://medium.com/pytorch/training-compact-transformers-from-scratch-in-30-minutes-with-pytorch-ff5c21668ed5
     def __init__(self, embed_dim, num_heads):
@@ -68,33 +68,35 @@ class BitMHA(nn.Module):
 
         self.qkv = BitLinear(embed_dim, embed_dim * 3)
         self.projection = BitLinear(embed_dim, embed_dim)
-        
+
     def forward(self, x, is_causal=True):
         B, N, C = x.shape
         qkv = (
-            self.qkv(x) # B, N, (3*C)
-            .reshape(B, N, 3, self.num_heads, C // self.num_heads) # B, N, 3(qkv), H(eads), embed_dim
-            .permute(2, 0, 3, 1, 4) # 3, B, H(eads), N, emb_dim
+            self.qkv(x)  # B, N, (3*C)
+            .reshape(B, N, 3, self.num_heads, C // self.num_heads)  # B, N, 3(qkv), H(eads), embed_dim
+            .permute(2, 0, 3, 1, 4)  # 3, B, H(eads), N, emb_dim
         )
-        q, k, v = torch.chunk(qkv, 3) # B, H, N, dim
+        q, k, v = torch.chunk(qkv, 3)  # B, H, N, dim
 
         # B,H,N,dim x B,H,dim,N -> B,H,N,N
-        attn = torch.bmm(q.view(-1, N, C // self.num_heads), k.view(-1, N, C // self.num_heads).transpose(-2, -1)) * self.scale # <q,k> / sqrt(d)
+        attn = torch.bmm(q.view(-1, N, C // self.num_heads),
+                         k.view(-1, N, C // self.num_heads).transpose(-2, -1)) * self.scale  # <q,k> / sqrt(d)
         if is_causal:
             mask = torch.ones((N, N)).tril_().unsqueeze(0).to(device)
             attn = attn.masked_fill(mask == 0, -9e15)
-        attn = attn.softmax(dim=-1) # Softmax over embedding dim
+        attn = attn.softmax(dim=-1)  # Softmax over embedding dim
 
-        x = ( # B, H, N, N
-            torch.bmm(attn, v.view(-1, N, C // self.num_heads)) # B,H,N,N x B,H,N,dim -> B, H, N, dim
+        x = (  # B, H, N, N
+            torch.bmm(attn, v.view(-1, N, C // self.num_heads))  # B,H,N,N x B,H,N,dim -> B, H, N, dim
             .reshape(B, self.num_heads, N, C // self.num_heads)
-            .transpose(1, 2) # B, N, H, dim
-            .reshape(B, N, C) # B, N, (H*dim)
+            .transpose(1, 2)  # B, N, H, dim
+            .reshape(B, N, C)  # B, N, (H*dim)
         )
         x = self.projection(x)
 
         return x
-    
+
+
 class Transformer(nn.Module):
     """
     Transformer module that applies multi-head attention and feed-forward layers.
@@ -115,7 +117,7 @@ class Transformer(nn.Module):
     """
 
     def __init__(
-        self, dim: int, heads: int, depth: int, ff_mult: int = 2, *args, **kwargs
+            self, dim: int, heads: int, depth: int, ff_mult: int = 2, *args, **kwargs
     ):
         super().__init__()
         self.layers = nn.ModuleList([])
@@ -172,12 +174,12 @@ class BitNetTransformer(nn.Module):
     """
 
     def __init__(
-        self,
-        dim: int,
-        depth: int,
-        num_tokens: int,
-        heads=8,
-        ff_mult=4,
+            self,
+            dim: int,
+            depth: int,
+            num_tokens: int,
+            heads=8,
+            ff_mult=4,
     ):
         super().__init__()
         self.emb = nn.Embedding(num_tokens, dim)
