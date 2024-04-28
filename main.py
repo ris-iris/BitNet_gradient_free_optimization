@@ -1,16 +1,39 @@
-# Import necessary libraries
-from torchvision.datasets import MNIST, CIFAR10, CIFAR100
-from torchvision.transforms import v2
-from torch.utils.data import DataLoader
 import torch
 import argparse
 import os
 
 # Import custom modules
-from utils import run
+from utils.run import run
+
+from utils.train import train
+from model.transformer import BitNetTransformer
+from datasets.addition import AdditionDataset
+from optim.adam import Adam
+from optim.simple_ga import SimpleGA
+
+
+if __name__ == "__main__":
+        print('Training with Genetic Algorithm')
+        batch_size, epochs = -1, 20
+        model = BitNetTransformer(64, 2, 15, 2)
+        optimizer = SimpleGA(model, torch.nn.functional.cross_entropy)
+        train_dataset, test_dataset = AdditionDataset(1024), AdditionDataset(128)
+
+        train(train_dataset, test_dataset, optimizer, 'cpu', batch_size, epochs,
+                model_save_root='models/', tensorboard_path="./tensorboard/part1_lr{}".format(0.001))
+        
+        print('Training with Adam')
+        batch_size, epochs = 4, 20
+        model = BitNetTransformer(64, 2, 15, 2)
+        optimizer = Adam(model, torch.nn.functional.cross_entropy, max_grad_norm=10, lr=1e-4, betas=(0.9, 0.98), weight_decay=0.2, warmup_steps=1024)
+        train_dataset, test_dataset = AdditionDataset(1024), AdditionDataset(128)
+
+        train(train_dataset, test_dataset, optimizer, 'cpu', batch_size, epochs,
+                model_save_root='models/', tensorboard_path="./tensorboard/part1_lr{}".format(0.001))
+        
 
 # Main function
-if __name__ == "__main__":
+if __name__ == "not__main__":
     """
     Main function to run the script. It parses command-line arguments, loads the dataset, splits it into training and validation sets,
     creates data loaders, sets the loss function, and performs cross-validation to find the best hyperparameters and optimizer.

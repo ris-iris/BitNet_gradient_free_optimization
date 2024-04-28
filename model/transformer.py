@@ -79,15 +79,15 @@ class BitMHA(nn.Module):
         q, k, v = torch.chunk(qkv, 3)  # B, H, N, dim
 
         # B,H,N,dim x B,H,dim,N -> B,H,N,N
-        attn = torch.bmm(q.view(-1, N, C // self.num_heads),
-                         k.view(-1, N, C // self.num_heads).transpose(-2, -1)) * self.scale  # <q,k> / sqrt(d)
+        attn = torch.bmm(q.reshape(-1, N, C // self.num_heads),
+                         k.reshape(-1, N, C // self.num_heads).transpose(-2, -1)) * self.scale  # <q,k> / sqrt(d)
         if is_causal:
             mask = torch.ones((N, N)).tril_().unsqueeze(0).to(device)
             attn = attn.masked_fill(mask == 0, -9e15)
         attn = attn.softmax(dim=-1)  # Softmax over embedding dim
 
         x = (  # B, H, N, N
-            torch.bmm(attn, v.view(-1, N, C // self.num_heads))  # B,H,N,N x B,H,N,dim -> B, H, N, dim
+            torch.bmm(attn, v.reshape(-1, N, C // self.num_heads))  # B,H,N,N x B,H,N,dim -> B, H, N, dim
             .reshape(B, self.num_heads, N, C // self.num_heads)
             .transpose(1, 2)  # B, N, H, dim
             .reshape(B, N, C)  # B, N, (H*dim)

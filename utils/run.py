@@ -1,20 +1,10 @@
-import random
-
-import numpy as np
 import torch
-from datasets import get_dataset
-from optim import optimizers
-from optim.train import train
+import random
+import numpy as np
 
-
-def get_tokenizer(model_name):
-    """
-    Get the tokenizer for the specified model.
-    """
-    # TODO: Implement this function
-    from transformers import AutoTokenizer
-    return AutoTokenizer.from_pretrained(model_name)
-
+from utils.train import train
+from model.transformer import BitNetTransformer
+from datasets.addition import AdditionDataset
 
 def run(args):
     """
@@ -54,16 +44,14 @@ def run(args):
     np.random.seed(seed)
     torch.manual_seed(seed)
 
-    tokenizer = get_tokenizer(model_name)
+    # tokenizer = get_tokenizer(model_name)
     # TODO
-    model = ...
+    model = BitNetTransformer(64, 2, 12, 2)
     model.to(device)
-    optimizer = getattr(optimizers, optimizer_name)(model.parameters(), lr=lr)
-
-    train_dataset, test_dataset, labels, input_dim = get_dataset(dataset, data_repo=data_repo, tokenizer=tokenizer,
-                                                                 max_length=max_length)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=lr, betas=(0.9, 0.98), weight_decay=0.2)
+    train_dataset, test_dataset = AdditionDataset(1024), AdditionDataset(128)
 
     # Create data loaders for the training, validation, and test sets
 
-    train(train_dataset, test_dataset, model, device, batch_size, epochs, lr, warmup_percent, max_grad_norm,
+    train(train_dataset, test_dataset, model, optimizer, device, batch_size, epochs, lr, warmup_percent, max_grad_norm,
           model_save_root='models/', tensorboard_path="./tensorboard/part1_lr{}".format(lr))
