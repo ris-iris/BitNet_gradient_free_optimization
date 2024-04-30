@@ -4,7 +4,7 @@ from torch import nn
 from optim.oprimizer import Optimizer
 
 class SimpleGA(Optimizer):
-    def __init__(self, model, loss_fn, population_size=50, treshold=5, bin_mutation_prob=0.1, emb_mutation=torch.randn, emb_mutation_scale = 0.1) -> None:
+    def __init__(self, model, loss_fn, population_size=50, treshold=15, bin_mutation_prob=0.5, emb_mutation=torch.randn, emb_mutation_scale=1) -> None:
         super().__init__(model, loss_fn)
         self.model.eval()
 
@@ -12,6 +12,7 @@ class SimpleGA(Optimizer):
 
         self.treshold = treshold
         self.population_size = population_size
+        self.parents_idx = torch.arange(population_size)
         self.population = []
         self.__init_population()
 
@@ -35,26 +36,30 @@ class SimpleGA(Optimizer):
             losses = []
             for p in self.population:
                 model.load_state_dict(p)
-                outputs = self.model.forward(input_ids)
+                outputs = model.forward(input_ids)
                 losses.append(self.loss_fn(outputs.transpose(1, 2), labels))
             losses = torch.tensor(losses)
             assert len(losses.shape) == 1, 'to many dimensions'
-            return torch.argsort(losses)[:self.treshold], losses.mean()
+            self.model.load_state_dict(self.population[torch.argmin(losses)])
+            self.parents_idx = torch.argsort(losses)[:self.treshold]
+            return losses.min()
         
-    def __mutate(self, parents_idx):
+    def __mutate(self):
         new_population = []
-        parent_choise = torch.randint(len(parents_idx), (self.population_size, ))
+        parent_choise = torch.randint(len(self.parents_idx), (self.population_size-1, ))
         for idx in parent_choise:
-            state_dict = self.population[idx]
+            state_dict = self.population[idx].copy()
             for layer, shape in self.state_shape_dict.items():
                 if 'emb' in layer:
                     state_dict[layer] += self.emb_mutation(shape) * self.emb_mutation_scale
                 else:
                     state_dict[layer] = torch.where(torch.rand(shape) < self.bin_mutation_prob, 1 - state_dict[layer], state_dict[layer])
             new_population.append(state_dict)
+
+        # saving the best from the previous iteration
+        new_population.append(self.population[self.parents_idx[0]])
         self.population = new_population
 
     def step(self, input_ids, labels):
-        parents_idx, loss = self.__eval(input_ids, labels)
-        self.__mutate(parents_idx)
-        return loss
+        self.__mutate()
+        return self.__eval(input_ids, labels)

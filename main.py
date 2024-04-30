@@ -10,11 +10,21 @@ from model.transformer import BitNetTransformer
 from datasets.addition import AdditionDataset
 from optim.adam import Adam
 from optim.simple_ga import SimpleGA
+from optim.mcmc import MCMC
 
 
 if __name__ == "__main__":
-        print('Training with Genetic Algorithm')
+        print('Training with MCMC')
         batch_size, epochs = -1, 20
+        model = BitNetTransformer(64, 2, 15, 2)
+        optimizer = MCMC(model, torch.nn.functional.cross_entropy)
+        train_dataset, test_dataset = AdditionDataset(1024), AdditionDataset(128)
+
+        train(train_dataset, test_dataset, optimizer, 'cpu', batch_size, epochs,
+                model_save_root='models/', tensorboard_path="./tensorboard/part1_lr{}".format(0.001))
+        
+        print('Training with Genetic Algorithm')
+        batch_size, epochs = -1, 5
         model = BitNetTransformer(64, 2, 15, 2)
         optimizer = SimpleGA(model, torch.nn.functional.cross_entropy)
         train_dataset, test_dataset = AdditionDataset(1024), AdditionDataset(128)
