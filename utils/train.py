@@ -103,7 +103,9 @@ def evaluate(eval_dataset, model, loss_fn, device, batch_size):
             input_ids, labels = batch_tuple
 
             outputs = model(input_ids)
-            loss = loss_fn(outputs.transpose(1, 2), labels)
+            if len(outputs.shape) == 3:
+                outputs = outputs.transpose(1, 2)
+            loss = loss_fn(outputs, labels)
 
             eval_loss_accum += loss.mean().item()
 
