@@ -2,6 +2,11 @@ import torch
 import argparse
 import os
 
+from torch.utils.data import DataLoader
+from transformers import BertTokenizer
+
+from datasets.datasets import SADataset
+from model.sa import SATransformer
 # Import custom modules
 from utils.run import run
 
@@ -14,33 +19,48 @@ from optim.mcmc import MCMC
 
 
 if __name__ == "__main__":
-        print('Training with MCMC')
-        batch_size, epochs = -1, 20
-        model = BitNetTransformer(64, 2, 15, 2)
-        optimizer = MCMC(model, torch.nn.functional.cross_entropy)
-        train_dataset, test_dataset = AdditionDataset(1024), AdditionDataset(128)
+        # print('Training with MCMC')
+        # batch_size, epochs = -1, 20
+        # model = BitNetTransformer(64, 2, 15, 2)
+        # optimizer = MCMC(model, torch.nn.functional.cross_entropy)
+        # train_dataset, test_dataset = AdditionDataset(1024), AdditionDataset(128)
+        #
+        # train(train_dataset, test_dataset, optimizer, 'cpu', batch_size, epochs,
+        #         model_save_root='models/', tensorboard_path="./tensorboard/part1_lr{}".format(0.001))
+        #
+        # print('Training with Genetic Algorithm')
+        # batch_size, epochs = -1, 5
+        # model = BitNetTransformer(64, 2, 15, 2)
+        # optimizer = SimpleGA(model, torch.nn.functional.cross_entropy)
+        # train_dataset, test_dataset = AdditionDataset(1024), AdditionDataset(128)
+        #
+        # train(train_dataset, test_dataset, optimizer, 'cpu', batch_size, epochs,
+        #         model_save_root='models/', tensorboard_path="./tensorboard/part1_lr{}".format(0.001))
+        #
+        # print('Training with Adam')
+        # batch_size, epochs = 4, 20
+        # model = BitNetTransformer(64, 2, 15, 2)
+        # optimizer = Adam(model, torch.nn.functional.cross_entropy, max_grad_norm=10, lr=1e-4, betas=(0.9, 0.98), weight_decay=0.2, warmup_steps=1024)
+        # train_dataset, test_dataset = AdditionDataset(1024), AdditionDataset(128)
+        #
+        # train(train_dataset, test_dataset, optimizer, 'cpu', batch_size, epochs,
+        #         model_save_root='models/', tensorboard_path="./tensorboard/part1_lr{}".format(0.001))
 
-        train(train_dataset, test_dataset, optimizer, 'cpu', batch_size, epochs,
-                model_save_root='models/', tensorboard_path="./tensorboard/part1_lr{}".format(0.001))
-        
-        print('Training with Genetic Algorithm')
-        batch_size, epochs = -1, 5
-        model = BitNetTransformer(64, 2, 15, 2)
-        optimizer = SimpleGA(model, torch.nn.functional.cross_entropy)
-        train_dataset, test_dataset = AdditionDataset(1024), AdditionDataset(128)
-
-        train(train_dataset, test_dataset, optimizer, 'cpu', batch_size, epochs,
-                model_save_root='models/', tensorboard_path="./tensorboard/part1_lr{}".format(0.001))
-        
-        print('Training with Adam')
-        batch_size, epochs = 4, 20
-        model = BitNetTransformer(64, 2, 15, 2)
+        batch_size, epochs = 30, 1
+        train_data_repo = './data/twitter_training.json'
+        test_data_repo = './data/twitter_validation.json'
+        labels = ['Positive', 'Neutral', 'Negative', 'Irrelevant']
+        tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
+        max_length = 130
+        train_dataset = SADataset(train_data_repo, tokenizer, labels)
+        test_dataset = SADataset(test_data_repo, tokenizer, labels)
+        # model = BitNetTransformer(max_length, 3, tokenizer.vocab_size, 2, 4)
+        model = SATransformer(dim=64, depth=2, num_tokens=tokenizer.vocab_size, transformer_output_dim=2, output_dim=4, max_length=max_length)
         optimizer = Adam(model, torch.nn.functional.cross_entropy, max_grad_norm=10, lr=1e-4, betas=(0.9, 0.98), weight_decay=0.2, warmup_steps=1024)
-        train_dataset, test_dataset = AdditionDataset(1024), AdditionDataset(128)
-
-        train(train_dataset, test_dataset, optimizer, 'cpu', batch_size, epochs,
+        device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+        train(train_dataset, test_dataset, optimizer, device, batch_size, epochs,
                 model_save_root='models/', tensorboard_path="./tensorboard/part1_lr{}".format(0.001))
-        
+
 
 # Main function
 if __name__ == "not__main__":
