@@ -69,7 +69,8 @@ class RMSNorm(nn.Module):
     def __init__(self, dim, affine=True):
         super().__init__()
         self.scale = dim ** 0.5
-        self.gamma = nn.Parameter(torch.ones(dim)) if affine else 1.0
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.gamma = nn.Parameter(torch.ones(dim, device=device)) if affine else 1.0
 
     def forward(self, x):
         return l2norm(x) * self.gamma * self.scale
