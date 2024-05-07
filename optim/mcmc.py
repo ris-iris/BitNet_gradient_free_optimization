@@ -33,7 +33,9 @@ class MCMC(Optimizer):
         old_state_dict = self.model.state_dict().copy()
         self.model.load_state_dict(self.__new_model())
         outputs = self.model.forward(input_ids)
-        loss = self.loss_fn(outputs.transpose(1, 2), labels)
+        if len(outputs.shape) == 3:
+            outputs = outputs.transpose(1, 2)
+        loss = self.loss_fn(outputs, labels)
         new_f = torch.exp(-loss)
 
         if torch.rand(1).item() < new_f / self.temp_f:

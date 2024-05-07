@@ -180,6 +180,7 @@ class BitNetTransformer(nn.Module):
             num_tokens: int,
             heads=8,
             ff_mult=4,
+            output_dim: int = None,
     ):
         super().__init__()
         self.emb = nn.Embedding(num_tokens, dim)
@@ -187,8 +188,9 @@ class BitNetTransformer(nn.Module):
         self.transformer = Transformer(
             dim=dim, depth=depth, heads=heads, ff_mult=ff_mult
         )
-
-        self.to_logits = nn.Sequential(RMSNorm(dim), nn.Linear(dim, num_tokens))
+        if output_dim is None:
+            output_dim = num_tokens
+        self.to_logits = nn.Sequential(RMSNorm(dim), nn.Linear(dim, output_dim))
 
     def forward(self, x):
         x = self.emb(x)

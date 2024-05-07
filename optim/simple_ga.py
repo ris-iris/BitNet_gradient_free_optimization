@@ -37,7 +37,9 @@ class SimpleGA(Optimizer):
             for p in self.population:
                 model.load_state_dict(p)
                 outputs = model.forward(input_ids)
-                losses.append(self.loss_fn(outputs.transpose(1, 2), labels))
+                if len(outputs.shape) == 3:
+                    outputs = outputs.transpose(1, 2)
+                losses.append(self.loss_fn(outputs, labels))
             losses = torch.tensor(losses)
             assert len(losses.shape) == 1, 'to many dimensions'
             self.model.load_state_dict(self.population[torch.argmin(losses)])

@@ -30,14 +30,15 @@ class SADataset(Dataset):
 
         with jsonlines.open(data_repo, "r") as reader:
             for sample in tqdm(reader.iter()):
+                # print(sample)
                 self.text_samples.append(sample)
                 # TODO
-                input_ids = self.tokenizer.encode(..., max_length=sent_max_length, truncation=True,
+                input_ids = self.tokenizer.encode(sample['input'], max_length=sent_max_length, truncation=True,
                                                   add_special_tokens=False)
                 input_ids = self.tokenizer.build_inputs_with_special_tokens(input_ids)
                 special_tokens_count = self.tokenizer.num_special_tokens_to_add()
                 input_ids = self.padding([input_ids], max_length=sent_max_length + special_tokens_count)[0]
-                label_id = self.label_to_id[...]
+                label_id = self.label_to_id[sample['label']]
 
                 self.samples.append({"ids": input_ids, "label": label_id})
 

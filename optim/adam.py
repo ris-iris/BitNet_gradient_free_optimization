@@ -26,7 +26,9 @@ class Adam(Optimizer):
 
         # get model's single-batch outputs and loss
         outputs = self.model.forward(input_ids)
-        loss = self.loss_fn(outputs.transpose(1, 2), labels)
+        if len(outputs.shape) == 3:
+            outputs = outputs.transpose(1, 2)
+        loss = self.loss_fn(outputs, labels)
 
         # conduct back-proporgation
         loss.backward()
