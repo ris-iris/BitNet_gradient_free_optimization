@@ -55,9 +55,9 @@ if __name__ == "__main__":
         train_dataset = SADataset(train_data_repo, tokenizer, labels)
         test_dataset = SADataset(test_data_repo, tokenizer, labels)
         # model = BitNetTransformer(max_length, 3, tokenizer.vocab_size, 2, 4)
-        model = SATransformer(dim=64, depth=2, num_tokens=tokenizer.vocab_size, transformer_output_dim=2, output_dim=4, max_length=max_length)
-        optimizer = Adam(model, torch.nn.functional.cross_entropy, max_grad_norm=10, lr=1e-4, betas=(0.9, 0.98), weight_decay=0.2, warmup_steps=1024)
         device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+        model = SATransformer(dim=64, depth=2, num_tokens=tokenizer.vocab_size, transformer_output_dim=2, output_dim=4, max_length=max_length).to(device)
+        optimizer = Adam(model, torch.nn.functional.cross_entropy, max_grad_norm=10, lr=1e-4, betas=(0.9, 0.98), weight_decay=0.2, warmup_steps=1024)
         train(train_dataset, test_dataset, optimizer, device, batch_size, epochs,
                 model_save_root='models/', tensorboard_path="./tensorboard/part1_lr{}".format(0.001))
 
@@ -74,15 +74,9 @@ if __name__ == "not__main__":
     parser.add_argument("--dataset", default="MNIST", help="The dataset to use for training and testing.")
     parser.add_argument("--batch_size", default=100, type=int, help="The batch size for training.")
     parser.add_argument("--epochs", default=2, type=int, help="The number of epochs to train for.")
-    parser.add_argument("--plot", action="store_true", help="Whether to plot the training and validation curves.")
     parser.add_argument("--lr", default=0.001, type=float, help="Learning rate for the optimizer.")
     parser.add_argument("--optimizer", default="SGD", help="The optimizer to use for training.")
-    parser.add_argument("--save", action="store_true", help="Whether to save the trained model.")
-    parser.add_argument("--save_path", default="./results/",
-                        help="The directory where the trained model should be saved.")
-    parser.add_argument("--verbose", action="store_true", help="Whether to print detailed training progress.")
     parser.add_argument("--scheduler", action="store_true", help="Whether to use a learning rate scheduler.")
-    parser.add_argument("--num_iter", default=5, type=int, help="The number of different models to train.")
     parser.add_argument("--seed", default=42, type=int, help="The random seed for reproducibility.")
     parser.add_argument("--model", default="bit_transformer", help="The model architecture to use for training.")
     parser.add_argument("--max_length", default=512, type=int, help="The maximum sequence length for the model.")
