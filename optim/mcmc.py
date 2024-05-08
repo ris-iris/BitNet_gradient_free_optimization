@@ -27,7 +27,9 @@ class MCMC(Optimizer):
     def step(self, input_ids, labels):
         if self.temp_f == -1:
             outputs = self.model.forward(input_ids)
-            self.temp_loss = self.loss_fn(outputs.transpose(1, 2), labels)
+            if len(outputs.shape) == 3:
+                outputs = outputs.transpose(1, 2)
+            self.temp_loss = self.loss_fn(outputs, labels)
             self.temp_f = torch.exp(-self.temp_loss)
 
         old_state_dict = self.model.state_dict().copy()
