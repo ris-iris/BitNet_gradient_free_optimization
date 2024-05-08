@@ -49,7 +49,7 @@ def get_optimizer(optimizer_name, model, loss_fn):
     Get the optimizer for the specified task.
     """
     if optimizer_name == "adam":
-        return Adam(model, loss_fn, lr=1e-4, betas=(0.9, 0.98), weight_decay=0.2, warmup_steps=1024)
+        return Adam(model, loss_fn, lr=1e-4, betas=(0.9, 0.98), weight_decay=0.2, warmup_steps=1024, max_grad_norm=10)
     elif optimizer_name == "simple_ga":
         return SimpleGA(model, loss_fn)
     elif optimizer_name == "mcmc":
