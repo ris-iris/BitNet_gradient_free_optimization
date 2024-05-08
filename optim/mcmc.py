@@ -15,10 +15,11 @@ class MCMC(Optimizer):
 
     def __new_model(self):
         state_dict = self.model.state_dict().copy()
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
         for layer in state_dict.keys():
             shape = state_dict[layer].shape
             if 'emb' in layer:
-                state_dict[layer] += self.emb_mutation(shape).to(self.model.device) * self.emb_mutation_scale
+                state_dict[layer] += self.emb_mutation(shape).to(device) * self.emb_mutation_scale
             else:
                 state_dict[layer] = torch.where(torch.rand(shape) < self.bin_mutation_prob, 1 - state_dict[layer], state_dict[layer])
 
