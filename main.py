@@ -18,7 +18,7 @@ from optim.simple_ga import SimpleGA
 from optim.mcmc import MCMC
 
 
-if __name__ == "__main__":
+if __name__ == "not__main__":
         # print('Training with MCMC')
         # batch_size, epochs = -1, 20
         # model = BitNetTransformer(64, 2, 15, 2)
@@ -63,26 +63,21 @@ if __name__ == "__main__":
 
 
 # Main function
-if __name__ == "not__main__":
+if __name__ == "__main__":
     """
-    Main function to run the script. It parses command-line arguments, loads the dataset, splits it into training and validation sets,
-    creates data loaders, sets the loss function, and performs cross-validation to find the best hyperparameters and optimizer.
+    Main function
     """
     # Create argument parser
     parser = argparse.ArgumentParser()
     # Add arguments to the parser
-    parser.add_argument("--dataset", default="MNIST", help="The dataset to use for training and testing.")
-    parser.add_argument("--batch_size", default=100, type=int, help="The batch size for training.")
-    parser.add_argument("--epochs", default=2, type=int, help="The number of epochs to train for.")
-    parser.add_argument("--lr", default=0.001, type=float, help="Learning rate for the optimizer.")
-    parser.add_argument("--optimizer", default="SGD", help="The optimizer to use for training.")
-    parser.add_argument("--scheduler", action="store_true", help="Whether to use a learning rate scheduler.")
+    parser.add_argument("--dataset", default="twitter", help="The dataset to use for training and testing.")
+    parser.add_argument("--batch_size", default=30, type=int, help="The batch size for training.")
+    parser.add_argument("--epochs", default=4, type=int, help="The number of epochs to train for.")
+    parser.add_argument("--optimizer", default="adam", help="The optimizer to use for training.")
     parser.add_argument("--seed", default=42, type=int, help="The random seed for reproducibility.")
-    parser.add_argument("--model", default="bit_transformer", help="The model architecture to use for training.")
-    parser.add_argument("--max_length", default=512, type=int, help="The maximum sequence length for the model.")
+    parser.add_argument("--model", default="bit_sa_transformer", help="The model architecture to use for training.")
+    parser.add_argument("--max_length", default=128, type=int, help="The maximum sequence length for the model.")
     parser.add_argument("--data_repo", default="./data/", help="The directory where the dataset is stored.")
-    parser.add_argument("--max_grad_norm", default=1.0, type=float, help="The maximum gradient norm for clipping.")
-    parser.add_argument("--warmup_percent", default=0.1, type=float, help="The percentage of warmup steps.")
 
     os.environ["WANDB_DISABLED"] = "true"
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
