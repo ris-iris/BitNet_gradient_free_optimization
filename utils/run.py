@@ -4,8 +4,6 @@ import numpy as np
 
 from datasets.datasets import get_dataset
 from utils.train import train
-from model.transformer import BitNetTransformer
-from datasets.addition import AdditionDataset
 from utils.utils import get_model, get_optimizer
 
 
