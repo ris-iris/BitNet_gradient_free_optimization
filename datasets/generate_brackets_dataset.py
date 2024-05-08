@@ -1,5 +1,6 @@
 from random import randint, choice
 import json
+import jsonlines
 
 def generate_correct_bracket_sequence(n):
     # Generates a correct bracket sequence of length 2 * n
@@ -31,7 +32,7 @@ def is_correct_bracket_sequence(sequence):
             return False
     return balance == 0
 
-def generate_bracket_dataset(max_size, num_examples, ouput_file):
+def generate_bracket_dataset(max_size, num_examples, output_file):
     # generates a dataset of bracket sequences of size max_size * 2 * num_examples:
     # for each size from 1 to max_size, generates num_examples correct bracket sequences 
     # and num_examples incorrect bracket sequences
@@ -42,12 +43,14 @@ def generate_bracket_dataset(max_size, num_examples, ouput_file):
     for n in range(1, max_size + 1):
         for _ in range(num_examples):
             data.append(generate_correct_bracket_sequence(n))
-            labels.append(0)
+            labels.append('correct')
             data.append(generate_incorrect_bracket_sequence(n))
-            labels.append(1)
+            labels.append('incorrect')
 
-    with open(ouput_file, "w") as f:
-        json.dump({"data": data, "labels": labels}, f)
+    with jsonlines.open(output_file, "w") as writer:
+        for i in range(len(data)):
+            writer.write({"input": ' '.join(data[i]), "label": labels[i]})
 
 if __name__ == "__main__":
-    generate_bracket_dataset(3, 2, "brackets_dataset.json")
+    generate_bracket_dataset(128, 1000, "../data/train_brackets_dataset.json")
+    generate_bracket_dataset(128, 100, "../data/test_brackets_dataset.json")

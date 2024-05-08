@@ -9,6 +9,7 @@ import numpy as np
 from transformers import BertTokenizer
 
 from datasets.addition import AdditionDataset
+from datasets.bracket import BracketTokenizer
 
 
 class SADataset(Dataset):
@@ -16,7 +17,7 @@ class SADataset(Dataset):
     SADataset in Pytorch
     """
 
-    def __init__(self, data_repo, tokenizer, labels, sent_max_length=128):
+    def __init__(self, data_repo, tokenizer, labels, sent_max_length=128, is_simple=False):
 
         self.label_to_id = {label: i for i, label in enumerate(labels)}
         self.id_to_label = {i: label for i, label in enumerate(labels)}
@@ -36,11 +37,15 @@ class SADataset(Dataset):
                 # print(sample)
                 self.text_samples.append(sample)
                 # TODO
-                input_ids = self.tokenizer.encode(sample['input'], max_length=sent_max_length, truncation=True,
-                                                  add_special_tokens=False)
-                input_ids = self.tokenizer.build_inputs_with_special_tokens(input_ids)
-                special_tokens_count = self.tokenizer.num_special_tokens_to_add()
-                input_ids = self.padding([input_ids], max_length=sent_max_length + special_tokens_count)[0]
+                if is_simple:
+                    input_ids = self.tokenizer.encode(sample['input'], max_length=sent_max_length)
+                else:
+                    input_ids = self.tokenizer.encode(sample['input'], max_length=sent_max_length, truncation=True,
+                                                      add_special_tokens=False)
+                    input_ids = self.tokenizer.build_inputs_with_special_tokens(input_ids)
+                    special_tokens_count = self.tokenizer.num_special_tokens_to_add()
+                    input_ids = self.padding([input_ids], max_length=sent_max_length + special_tokens_count)[0]
+
                 label_id = self.label_to_id[sample['label']]
 
                 self.samples.append({"ids": input_ids, "label": label_id})
@@ -130,7 +135,12 @@ def get_dataset(dataset_name, data_repo=None, max_length=128):
         train_dataset, test_dataset = AdditionDataset(1024), AdditionDataset(128)
         vocab_size = 15
     elif dataset_name == "brackets":
-        pass
-
+        labels = ['correct', 'incorrect']
+        tokenizer = BracketTokenizer()
+        train_dataset = SADataset(data_repo + "/train_brackets_dataset.json", tokenizer, labels, max_length, is_simple=True)
+        test_dataset = SADataset(data_repo + "/test_brackets_dataset.json", tokenizer, labels, max_length, is_simple=True)
+        vocab_size = len(tokenizer.vocab)
+    else:
+        raise ValueError("Invalid dataset name.")
 
     return train_dataset, test_dataset, vocab_size
