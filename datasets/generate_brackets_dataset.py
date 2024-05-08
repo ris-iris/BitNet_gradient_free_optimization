@@ -52,5 +52,5 @@ def generate_bracket_dataset(max_size, num_examples, output_file):
             writer.write({"input": ' '.join(data[i]), "label": labels[i]})
 
 if __name__ == "__main__":
-    generate_bracket_dataset(128, 1000, "../data/train_brackets_dataset.json")
-    generate_bracket_dataset(128, 100, "../data/test_brackets_dataset.json")
+    generate_bracket_dataset(128, 100, "../data/train_brackets_dataset.json")
+    generate_bracket_dataset(128, 10, "../data/test_brackets_dataset.json")
