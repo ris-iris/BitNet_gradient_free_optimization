@@ -43,6 +43,7 @@ def run(args):
     train_dataset, test_dataset, vocab_size = get_dataset(dataset, data_repo, max_length)
 
     model = get_model(model_name, vocab_size, max_length, len(train_dataset.label_to_id) if hasattr(train_dataset, 'label_to_id') else None)
+    model.to(device)
     optimizer = get_optimizer(optimizer_name, model, torch.nn.functional.cross_entropy)
 
 
