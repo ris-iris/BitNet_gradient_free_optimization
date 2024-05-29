@@ -5,6 +5,7 @@ from model.transformer import BitNetTransformer
 from optim.adam import Adam
 from optim.mcmc import MCMC
 from optim.simple_ga import SimpleGA
+from optim.simulated_annealing import SimulatedAnnealing
 
 
 def compute_metrics(predictions, gold_labels):
@@ -54,6 +55,8 @@ def get_optimizer(optimizer_name, model, loss_fn):
         return SimpleGA(model, loss_fn)
     elif optimizer_name == "mcmc":
         return MCMC(model, loss_fn)
+    elif optimizer_name == "sim_annealing":
+        return SimulatedAnnealing(model, loss_fn)
     else:
         raise ValueError(f"Optimizer {optimizer_name} not supported")
 
