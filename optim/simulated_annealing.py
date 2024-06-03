@@ -15,7 +15,7 @@ class SimulatedAnnealing(Optimizer):
         self.best_params = copy.deepcopy(model.state_dict())
         self.best_loss = float('inf')
 
-    def step(self, input_ids, labels):
+    def step(self, input_ids, labels, track_ops=False):
         # Evaluate the current model's loss
         outputs = self.model(input_ids)
         if len(outputs.shape) == 3:
@@ -55,14 +55,17 @@ class SimulatedAnnealing(Optimizer):
         # Cool down the temperature
         self.current_temp = max(self.current_temp * self.cooling_rate, self.min_temp)
 
+        if track_ops:
+            return self.best_loss, self.op_per_step(input_ids.shape[0], input_ids.shape[1])
         return self.best_loss
 
     def __generate_new_params(self):
         # Create a new set of parameters with small random perturbations
         new_params = copy.deepcopy(self.model.state_dict())
         for param_name in new_params.keys():
+            # TODO: replace with mutation for quantized model (we can't do mutation like this for quantized model, all the values should be 0 or 1)
             perturbation = torch.randn_like(new_params[param_name]) * self.current_temp
-            new_params[param_name].add_(perturbation)
+            new_params[param_name].add_(perturbation) 
         return new_params
 
     def __acceptance_probability(self, current_loss, new_loss, temperature):
@@ -70,3 +73,11 @@ class SimulatedAnnealing(Optimizer):
             return 1.0
         else:
             return torch.exp((current_loss - new_loss) / temperature).item()
+        
+    def op_per_step(self, batch_size, seq_length):
+        return {
+            'float MACs forward': self.model.num_float_MACs(seq_length) * batch_size,
+            'float MACs backward': 0,
+            'int MACs': self.model.num_int_MACs(seq_length) * batch_size,
+            'random numbers': self.model.num_params()
+        }

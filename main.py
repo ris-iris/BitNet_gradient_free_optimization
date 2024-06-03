@@ -78,6 +78,7 @@ if __name__ == "__main__":
     parser.add_argument("--model", default="bit_sa_transformer", help="The model architecture to use for training.")
     parser.add_argument("--max_length", default=128, type=int, help="The maximum sequence length for the model.")
     parser.add_argument("--data_repo", default="./data/", help="The directory where the dataset is stored.")
+    parser.add_argument("--track_ops", default=False, type=bool, help="The flag that specifies if operations will be tracked.")
 
     os.environ["WANDB_DISABLED"] = "true"
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"

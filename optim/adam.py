@@ -20,7 +20,7 @@ class Adam(Optimizer):
         self.model.train()
 
 
-    def step(self, input_ids, labels):
+    def step(self, input_ids, labels, track_ops=False):
         # clear the gradients of all optimized parameters
         self.model.zero_grad()
 
@@ -41,4 +41,14 @@ class Adam(Optimizer):
         if self.scheduler:
             self.scheduler.step()
 
+        if track_ops:
+            return loss, self.op_per_step(input_ids.shape[0], input_ids.shape[1])
         return loss
+    
+    def op_per_step(self, batch_size, seq_length):
+        return {
+            'float MACs forward': self.model.num_float_MACs(seq_length) * batch_size,
+            'float MACs backward': 2 * self.model.num_float_MACs(seq_length) * batch_size,
+            'int MACs': 0,
+            'random numbers': 0
+        }

@@ -25,7 +25,7 @@ class MCMC(Optimizer):
 
         return state_dict
     
-    def step(self, input_ids, labels):
+    def step(self, input_ids, labels, track_ops=False):
         if self.temp_f == -1:
             outputs = self.model.forward(input_ids)
             if len(outputs.shape) == 3:
@@ -46,7 +46,15 @@ class MCMC(Optimizer):
             self.temp_loss = loss
         else:
             self.model.load_state_dict(old_state_dict)
-        
+
+        if track_ops:
+            return self.temp_loss, self.op_per_step(input_ids.shape[0], input_ids.shape[1])
         return self.temp_loss
 
-        
+    def op_per_step(self, batch_size, seq_length):
+        return {
+            'float MACs forward': self.model.num_float_MACs(seq_length) * batch_size,
+            'float MACs backward': 0,
+            'int MACs': self.model.num_int_MACs(seq_length) * batch_size,
+            'random numbers': self.model.num_params()
+        }

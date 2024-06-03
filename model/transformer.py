@@ -192,7 +192,30 @@ class BitNetTransformer(nn.Module):
             output_dim = num_tokens
         self.to_logits = nn.Sequential(RMSNorm(dim), nn.Linear(dim, output_dim))
 
+        # calculate MACs in one forward pass
+        self.transformer_macs = depth * (
+            4 * dim * dim # MH Attention MACs
+            + 2 * dim * dim * ff_mult # feedforward MACs
+        )
+        self.attention_macs = depth * dim
+        self.logits_macs = dim * output_dim
+
     def forward(self, x):
         x = self.emb(x)
         x = self.transformer(x)
         return self.to_logits(x)
+    
+    def num_float_MACs(self, seq_length):
+        if self.training:
+            return (self.logits_macs + self.transformer_macs) * seq_length +  self.attention_macs * seq_length * seq_length
+        else:
+            return self.logits_macs * seq_length +  self.attention_macs * seq_length * seq_length
+
+    def num_int_MACs(self, seq_length):
+        if self.training:
+            return 0
+        else:
+            return self.transformer_macs * seq_length
+
+    def num_params(self):
+        return sum(p.numel() for p in self.parameters())

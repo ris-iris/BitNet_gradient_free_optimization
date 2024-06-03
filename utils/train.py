@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
 
 
 def train(train_dataset, dev_dataset, optimizer, device, batch_size, epochs, model_save_root,
-          tensorboard_path="./tensorboard"):
+          track_ops=False):
     '''
     Train models with predefined datasets.
 
@@ -49,7 +49,10 @@ def train(train_dataset, dev_dataset, optimizer, device, batch_size, epochs, mod
             batch_tuple = tuple(input_tensor.to(device) for input_tensor in batch)
             input_ids, labels = batch_tuple
 
-            loss = optimizer.step(input_ids, labels)
+            if track_ops:
+                loss, ops = optimizer.step(input_ids, labels, True)
+            else:
+                loss = optimizer.step(input_ids, labels)
 
             train_loss_accum += loss.mean().item()
 

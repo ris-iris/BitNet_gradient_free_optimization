@@ -22,6 +22,7 @@ def run(args):
     model_name = args.model
     data_repo = args.data_repo
     max_length = args.max_length
+    track_ops = args.track_ops
 
     print(f"Dataset: {dataset}")
     print(f"Optimizer: {optimizer_name}")
@@ -32,6 +33,7 @@ def run(args):
     print(f"Model: {model_name}")
     print(f"Max length: {args.max_length}")
     print(f"Data repo: {args.data_repo}")
+    print(f"Tracking OPs: {args.track_ops}")
 
     torch.backends.cudnn.deterministic = True
     random.seed(seed)
@@ -47,4 +49,4 @@ def run(args):
 
 
     train(train_dataset, test_dataset, optimizer, device, batch_size, epochs,
-          model_save_root='models/', tensorboard_path="./tensorboard/part1_lr{}".format(0.001))
+          model_save_root='models/', track_ops=track_ops)

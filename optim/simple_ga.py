@@ -62,6 +62,17 @@ class SimpleGA(Optimizer):
         new_population.append(self.population[self.parents_idx[0]])
         self.population = new_population
 
-    def step(self, input_ids, labels):
+    def step(self, input_ids, labels, track_ops=False):
         self.__mutate()
-        return self.__eval(input_ids, labels)
+        loss = self.__eval(input_ids, labels)
+        if track_ops:
+            return loss, self.op_per_step(input_ids.shape[0], input_ids.shape[1])
+        return loss
+    
+    def op_per_step(self, batch_size, seq_length):
+        return {
+            'float MACs forward': self.population_size * self.model.num_float_MACs(seq_length) * batch_size,
+            'float MACs backward': 0,
+            'int MACs': self.population_size * self.model.num_int_MACs(seq_length) * batch_size,
+            'random numbers': (self.population_size - 1) * self.model.num_params()
+        }
