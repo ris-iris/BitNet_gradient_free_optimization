@@ -38,3 +38,21 @@ class AdditionDataset(Dataset):
         collated_one_hot = torch.stack([pad_labels(o[0], max_length) for o in data])
         collated_labels = torch.stack([pad_labels(l[1], max_length) for l in data])
         return collated_one_hot, collated_labels
+    
+    def decode_item(self, tokens):
+        res = ''
+        for t in tokens:
+            if t == 14:
+                res += " "
+            elif t == 13:
+                break
+            elif t== 12:
+                continue
+            elif t == 11:
+                res += "="
+            elif t == 10:
+                res += "+"
+            else:
+                res += str(t)
+        return res
+

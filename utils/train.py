@@ -1,12 +1,12 @@
 from tqdm import tqdm
+import wandb
 
 import torch
 import torch.utils.data
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
-# from torch.utils.tensorboard import SummaryWriter
 
 
-def train(train_dataset, dev_dataset, optimizer, device, batch_size, epochs, model_save_root,
+def train(train_dataset, dev_dataset, optimizer, device, batch_size, epochs,
           track_ops=False):
     '''
     Train models with predefined datasets.
@@ -21,7 +21,6 @@ def train(train_dataset, dev_dataset, optimizer, device, batch_size, epochs, mod
       - model_save_root: path to save model checkpoints
     '''
 
-    # tb_writer = SummaryWriter(tensorboard_path)
     if batch_size < 0:
         batch_size = len(train_dataset)
     train_sampler = RandomSampler(train_dataset)
@@ -40,7 +39,6 @@ def train(train_dataset, dev_dataset, optimizer, device, batch_size, epochs, mod
 
         train_loss_accum = 0.0
         epoch_train_step = 0
-        running_loss = 0.0
 
         for i, batch in enumerate(tqdm(train_dataloader, desc="Training")):
             epoch_train_step += 1
@@ -51,26 +49,21 @@ def train(train_dataset, dev_dataset, optimizer, device, batch_size, epochs, mod
 
             if track_ops:
                 loss, ops = optimizer.step(input_ids, labels, True)
+                ops['loss'] = loss
+                wandb.log({"train/" + k : v for k, v in ops.items()})
             else:
                 loss = optimizer.step(input_ids, labels)
+                wandb.log({"train/loss": loss})
 
             train_loss_accum += loss.mean().item()
-
-            running_loss += loss.mean().item() # why mean?
-            if i > 0 and i % log_freq == 0:
-                #tb_writer.add_scalar("task1_roberta/loss/train", running_loss / log_freq, total_train_step)
-                running_loss = 0.0
 
         epoch_train_loss = train_loss_accum / epoch_train_step
 
         # epoch evaluation
         dev_loss = evaluate(dev_dataset, optimizer.model, optimizer.loss_fn, device, batch_size)
-        #tb_writer.add_scalar("training/loss/eval", dev_loss, total_train_step)
 
         print(f'Epoch: {epoch} | Training Loss: {epoch_train_loss:.3f} | Validation Loss: {dev_loss:.3f}')
         
-    #tb_writer.flush()
-    #tb_writer.close()
 
 
 def evaluate(eval_dataset, model, loss_fn, device, batch_size):
@@ -109,6 +102,7 @@ def evaluate(eval_dataset, model, loss_fn, device, batch_size):
             if len(outputs.shape) == 3:
                 outputs = outputs.transpose(1, 2)
             loss = loss_fn(outputs, labels)
+            wandb.log({"eval/loss": loss})
 
             eval_loss_accum += loss.mean().item()
 

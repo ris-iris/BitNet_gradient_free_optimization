@@ -1,6 +1,7 @@
 import torch
 import random
 import numpy as np
+import wandb
 
 from datasets.datasets import get_dataset
 from utils.train import train
@@ -24,16 +25,20 @@ def run(args):
     max_length = args.max_length
     track_ops = args.track_ops
 
-    print(f"Dataset: {dataset}")
-    print(f"Optimizer: {optimizer_name}")
-    print(f"Using {device}")
-    print(f"Seed: {seed}")
-    print(f"Batch size: {batch_size}")
-    print(f"Epochs: {epochs}")
-    print(f"Model: {model_name}")
-    print(f"Max length: {args.max_length}")
-    print(f"Data repo: {args.data_repo}")
-    print(f"Tracking OPs: {args.track_ops}")
+    config = {
+        "Dataset": dataset, 
+        "Optimizer": optimizer_name, 
+        "Using device": device,
+        "Seed": seed,
+        "Batch size": batch_size,
+        "Epochs": epochs,
+        "Model": model_name,
+        "Max length": max_length,
+        "Data repo": data_repo,
+        "Tracking OPs": track_ops,
+    }
+
+    print(config)
 
     torch.backends.cudnn.deterministic = True
     random.seed(seed)
@@ -46,7 +51,8 @@ def run(args):
     model.to(device)
     optimizer = get_optimizer(optimizer_name, model, torch.nn.functional.cross_entropy)
 
+    wandb.init(project="bitNet_gradient_free", config=config)
 
-
-    train(train_dataset, test_dataset, optimizer, device, batch_size, epochs,
-          model_save_root='models/', track_ops=track_ops)
+    train(train_dataset, test_dataset, optimizer, device, batch_size, epochs, track_ops=track_ops)
+    
+    wandb.finish()
