@@ -90,6 +90,14 @@ def evaluate(eval_dataset, model, loss_fn, device, batch_size):
 
     model.eval()
 
+    test_table = wandb.Table(columns=['input', 'labels'])
+    decode_inputs = lambda x: eval_dataset.tokenizer.decode(x)
+
+    if hasattr(eval_dataset, 'decode_class'):
+        decode_outputs = lambda x: eval_dataset.decode_class([x])
+    else:
+        decode_outputs = lambda x: eval_dataset.tokenizer.decode(x.argmax(0))
+
     for batch in tqdm(eval_dataloader, desc="Evaluation"):
 
         eval_step += 1
@@ -105,5 +113,11 @@ def evaluate(eval_dataset, model, loss_fn, device, batch_size):
             wandb.log({"eval/loss": loss})
 
             eval_loss_accum += loss.mean().item()
+
+    # log last batch
+    for i in range(input_ids.shape[0]):
+        test_table.add_data(decode_inputs(input_ids[i]), decode_outputs(outputs[i]))
+    
+    wandb.log({"eval_predictions" : test_table})
 
     return eval_loss_accum / eval_step
