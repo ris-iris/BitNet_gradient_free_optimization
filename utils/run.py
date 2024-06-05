@@ -25,19 +25,22 @@ def run(args):
     track_ops = args.track_ops
 
     config = {
-        "Dataset": dataset, 
-        "Optimizer": optimizer_name, 
-        "Using device": device,
-        "Seed": seed,
-        "Batch size": batch_size,
-        "Epochs": epochs,
-        "Model": model_name,
-        "Max length": max_length,
-        "Data repo": data_repo,
-        "Tracking OPs": track_ops,
+        "dataset": dataset, 
+        "optimizer": optimizer_name, 
+        "device": device,
+        "seed": seed,
+        "batch_size": batch_size,
+        "epochs": epochs,
+        "model": model_name,
+        "max_length": max_length,
+        "data_repo": data_repo,
+        "track_ops": track_ops,
     }
-
     print(config)
+    
+    opt_kwargs = vars(args)
+    for key in config.keys():
+        opt_kwargs.pop(key, None)
 
     torch.backends.cudnn.deterministic = True
     random.seed(seed)
@@ -48,7 +51,7 @@ def run(args):
 
     model = get_model(model_name, vocab_size, max_length+2, len(train_dataset.label_to_id) if hasattr(train_dataset, 'label_to_id') else None)
     model.to(device)
-    optimizer = get_optimizer(optimizer_name, model, torch.nn.functional.cross_entropy)
+    optimizer = get_optimizer(optimizer_name, model, torch.nn.functional.cross_entropy, opt_kwargs)
 
     wandb.init(project="bitNet_gradient_free", group=dataset + "_dataset", config=config)
 

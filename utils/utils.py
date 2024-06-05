@@ -52,18 +52,18 @@ def get_model(model_name, vocab_size, max_length=None, output_dim=None):
     else:
         raise ValueError(f"Model {model_name} not supported")
 
-def get_optimizer(optimizer_name, model, loss_fn):
+def get_optimizer(optimizer_name, model, loss_fn, opt_kwargs):
     """
     Get the optimizer for the specified task.
     """
     if optimizer_name == "adam":
-        return Adam(model, loss_fn, lr=1e-4, betas=(0.9, 0.98), weight_decay=0.2, warmup_steps=1024, max_grad_norm=10)
+        return Adam(model, loss_fn, **opt_kwargs)
     elif optimizer_name == "simple_ga":
-        return SimpleGA(model, loss_fn)
+        return SimpleGA(model, loss_fn, **opt_kwargs)
     elif optimizer_name == "mcmc":
-        return MCMC(model, loss_fn)
+        return MCMC(model, loss_fn, **opt_kwargs)
     elif optimizer_name == "sim_annealing":
-        return SimulatedAnnealing(model, loss_fn)
+        return SimulatedAnnealing(model, loss_fn, **opt_kwargs)
     else:
         raise ValueError(f"Optimizer {optimizer_name} not supported")
 

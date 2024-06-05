@@ -5,10 +5,10 @@ from transformers import get_constant_schedule_with_warmup
 from optim.oprimizer import Optimizer
 
 class Adam(Optimizer):
-    def __init__(self, model, loss_fn, max_grad_norm, lr=1e-4, betas=(0.9, 0.98), weight_decay=0.2, warmup_steps=-1) -> None:
+    def __init__(self, model, loss_fn, max_grad_norm, lr=1e-4, beta1=0.9, beta2=0.98, weight_decay=0.2, warmup_steps=-1, **kwargs) -> None:
         super().__init__(model, loss_fn)
 
-        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=lr, betas=betas, weight_decay=weight_decay)
+        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=lr, betas=(beta1, beta2), weight_decay=weight_decay)
         if warmup_steps > 0:
             self.scheduler = get_constant_schedule_with_warmup(self.optimizer, num_warmup_steps=warmup_steps)
         else:

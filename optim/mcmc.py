@@ -4,13 +4,13 @@ from torch import nn
 from optim.oprimizer import Optimizer
 
 class MCMC(Optimizer):
-    def __init__(self, model, loss_fn, bin_mutation_prob=0.5, emb_mutation=torch.randn, emb_mutation_scale=1) -> None:
+    def __init__(self, model, loss_fn, bin_mutation_prob=0.5, emb_mutation_scale=1, **kwargs) -> None:
         super().__init__(model, loss_fn)
         self.temp_f = -1
         self.temp_loss = -1
 
         self.bin_mutation_prob = bin_mutation_prob
-        self.emb_mutation = emb_mutation
+        self.emb_mutation = torch.randn
         self.emb_mutation_scale = emb_mutation_scale
 
     def __new_model(self):

@@ -3,10 +3,12 @@ from torch import nn
 from optim.oprimizer import Optimizer
 import copy
 import random
+import math
 
 class SimulatedAnnealing(Optimizer):
-    def __init__(self, model, loss_fn, initial_temp=100.0, cooling_rate=0.99, min_temp=1e-3) -> None:
+    def __init__(self, model, loss_fn, initial_temp=100.0, cooling_rate=0.99, min_temp=1e-3, **kwargs) -> None:
         super().__init__(model, loss_fn)
+        self.max_temp = initial_temp
         self.current_temp = initial_temp
         self.cooling_rate = cooling_rate
         self.min_temp = min_temp
@@ -58,16 +60,21 @@ class SimulatedAnnealing(Optimizer):
         if track_ops:
             return self.best_loss, self.op_per_step(input_ids.shape[0], input_ids.shape[1])
         return self.best_loss
-
+    
     def __generate_new_params(self):
         # Create a new set of parameters with small random perturbations
-        new_params = copy.deepcopy(self.model.state_dict())
-        for param_name in new_params.keys():
-            # TODO: replace with mutation for quantized model (we can't do mutation like this for quantized model, all the values should be 0 or 1)
-            perturbation = torch.randn_like(new_params[param_name]) * self.current_temp
-            new_params[param_name].add_(perturbation) 
-        return new_params
+        inv_prob = self.current_temp / self.max_temp
+        state_dict = self.model.state_dict().copy()
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        for layer in state_dict.keys():
+            shape = state_dict[layer].shape
+            if 'emb' in layer:
+                state_dict[layer] += torch.randn_like(state_dict[layer]) * self.current_temp
+            else:
+                state_dict[layer] = torch.where(torch.rand(shape).to(device) < inv_prob, 1 - state_dict[layer], state_dict[layer])
 
+        return state_dict
+    
     def __acceptance_probability(self, current_loss, new_loss, temperature):
         if new_loss < current_loss:
             return 1.0
