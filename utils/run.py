@@ -3,9 +3,8 @@ import random
 import numpy as np
 import wandb
 
-from datasets.datasets import get_dataset
 from utils.train import train
-from utils.utils import get_model, get_optimizer
+from utils.utils import get_model, get_optimizer, get_dataset
 
 
 def run(args):

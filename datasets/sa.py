@@ -6,10 +6,6 @@ import jsonlines
 import torch
 import torch.utils.data
 import numpy as np
-from transformers import BertTokenizer
-
-from datasets.addition import AdditionDataset
-from datasets.bracket import BracketTokenizer
 
 
 class SADataset(Dataset):
@@ -109,38 +105,3 @@ class SADataset(Dataset):
 
         return label_name_list
 
-
-# TODO: Implement the get_dataset function
-def get_dataset(dataset_name, data_repo=None, max_length=128):
-    """
-    Get the dataset for training and evaluation.
-
-    INPUT:
-      - dataset_name: the name of the dataset
-      - data_repo: the path to the dataset
-      - max_length: the maximum length of the sentence
-
-    OUTPUT:
-      - train_dataset: the training dataset
-      - test_dataset: the test dataset
-      - vocab_size: the size of the vocabulary
-    """
-    if dataset_name == "twitter":
-        labels = ['Positive', 'Neutral', 'Negative', 'Irrelevant']
-        tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
-        train_dataset = SADataset(data_repo + "/twitter_training.json", tokenizer, labels, max_length)
-        test_dataset = SADataset(data_repo + "/twitter_validation.json", tokenizer, labels, max_length)
-        vocab_size = tokenizer.vocab_size
-    elif dataset_name == "addition":
-        train_dataset, test_dataset = AdditionDataset(1024), AdditionDataset(128)
-        vocab_size = 15
-    elif dataset_name == "brackets":
-        labels = ['correct', 'incorrect']
-        tokenizer = BracketTokenizer()
-        train_dataset = SADataset(data_repo + "/train_brackets_dataset.json", tokenizer, labels, max_length, is_simple=True)
-        test_dataset = SADataset(data_repo + "/test_brackets_dataset.json", tokenizer, labels, max_length, is_simple=True)
-        vocab_size = len(tokenizer.vocab)
-    else:
-        raise ValueError("Invalid dataset name.")
-
-    return train_dataset, test_dataset, vocab_size

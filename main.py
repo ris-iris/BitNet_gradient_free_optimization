@@ -1,23 +1,10 @@
-import torch
 import argparse
 import os
 
-from torch.utils.data import DataLoader
-from transformers import BertTokenizer
+import wandb
 
-from datasets.datasets import SADataset
-from model.sa import SATransformer
 # Import custom modules
 from utils.run import run
-
-from utils.train import train
-from model.transformer import BitNetTransformer
-from datasets.addition import AdditionDataset
-from optim.adam import Adam
-from optim.simple_ga import SimpleGA
-from optim.mcmc import MCMC
-
-import wandb
 
 
 # Main function
