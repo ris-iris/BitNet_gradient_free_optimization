@@ -2,25 +2,49 @@ import torch
 from torch.utils.data import Dataset
 import numpy as np
 
+
+class AdditionTokenizer:
+    def __init__(self) -> None:
+        pass
+    
+    def encode(self, text):
+        def int_or_label(c):
+            if c.isdigit():
+                return int(c)
+            elif c == '+':
+                return 10
+            return 11
+        return torch.tensor([12, ] + [int_or_label(c) for c in text] + [13, ])
+
+    def decode(self, tokens):
+        res = ''
+        for t in tokens.cpu().detach().numpy():
+            if t == 14:
+                res += " "
+            elif t == 13:
+                break
+            elif t== 12:
+                continue
+            elif t == 11:
+                res += "="
+            elif t == 10:
+                res += "+"
+            else:
+                res += str(t)
+        return res
+
+
 class AdditionDataset(Dataset):
     def __init__(self, size) -> None:
         self.size = size
+        self.tokenizer = AdditionTokenizer()
         self.problems = self.__generate_problems__()
 
     def __generate_problems__(self):
-        def str_to_labels(s):
-            def int_or_label(c):
-                if c.isdigit():
-                    return int(c)
-                elif c == '+':
-                    return 10
-                return 11
-            return torch.tensor([12, ] + [int_or_label(c) for c in s] + [13, ])
-
         add = torch.randint(0, 1000, (self.size, 3))
         results = add.sum(dim=1)
         problems = ['+'.join([str(term.item()) for term in terms]) + '=' + str(res.item()) for terms, res in zip(add, results)]
-        return [str_to_labels(p) for p in problems]
+        return [self.tokenizer.encode(p) for p in problems]
         
     def __len__(self):
         return self.size
@@ -39,20 +63,3 @@ class AdditionDataset(Dataset):
         collated_labels = torch.stack([pad_labels(l[1], max_length) for l in data])
         return collated_one_hot, collated_labels
     
-    def decode_item(self, tokens):
-        res = ''
-        for t in tokens:
-            if t == 14:
-                res += " "
-            elif t == 13:
-                break
-            elif t== 12:
-                continue
-            elif t == 11:
-                res += "="
-            elif t == 10:
-                res += "+"
-            else:
-                res += str(t)
-        return res
-

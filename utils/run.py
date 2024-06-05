@@ -51,7 +51,7 @@ def run(args):
     model.to(device)
     optimizer = get_optimizer(optimizer_name, model, torch.nn.functional.cross_entropy)
 
-    wandb.init(project="bitNet_gradient_free", config=config)
+    wandb.init(project="bitNet_gradient_free", group=dataset + "_dataset", config=config)
 
     train(train_dataset, test_dataset, optimizer, device, batch_size, epochs, track_ops=track_ops)
     
