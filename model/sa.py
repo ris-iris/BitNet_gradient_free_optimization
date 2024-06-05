@@ -17,7 +17,7 @@ class SATransformer(nn.Module):
     ):
         super().__init__()
         self.transformer = BitNetTransformer(
-            dim=dim, depth=depth, heads=heads, ff_mult=ff_mult, num_tokens=num_tokens, output_dim=transformer_output_dim
+            dim=dim, depth=depth, heads=heads, ff_mult=ff_mult, num_tokens=num_tokens, output_dim=transformer_output_dim, max_length=max_length
         )
         self.linear = nn.Linear(transformer_output_dim*max_length, output_dim)
 

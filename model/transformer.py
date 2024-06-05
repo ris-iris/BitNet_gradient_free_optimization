@@ -1,4 +1,5 @@
 from typing import Callable, Optional
+import math
 
 import torch
 import torch.nn.functional as F
@@ -145,7 +146,26 @@ class Transformer(nn.Module):
             x = ffn(x) + x
         return x
 
+# From pytorch docs
+class PositionalEncoding(nn.Module):
 
+    def __init__(self, d_model: int, max_len: int = 5000):
+        super().__init__()
+
+        position = torch.arange(max_len).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, d_model, 2) * (-math.log(10000.0) / d_model))
+        pe = torch.zeros(max_len, 1, d_model)
+        pe[:, 0, 0::2] = torch.sin(position * div_term)
+        pe[:, 0, 1::2] = torch.cos(position * div_term)
+        self.register_buffer('pe', pe)
+
+    def forward(self, x: Tensor) -> Tensor:
+        """
+        Arguments:
+            x: Tensor, shape ``[seq_len, batch_size, embedding_dim]``
+        """
+        return x + self.pe[:x.size(0)]
+    
 # [MAIN MODEL] BitNetTransformer
 class BitNetTransformer(nn.Module):
     """
@@ -181,9 +201,12 @@ class BitNetTransformer(nn.Module):
             heads=8,
             ff_mult=4,
             output_dim: int = None,
+            max_length=128
     ):
         super().__init__()
+
         self.emb = nn.Embedding(num_tokens, dim)
+        self.pe = PositionalEncoding(dim, max_length)
 
         self.transformer = Transformer(
             dim=dim, depth=depth, heads=heads, ff_mult=ff_mult
@@ -202,6 +225,7 @@ class BitNetTransformer(nn.Module):
 
     def forward(self, x):
         x = self.emb(x)
+        x = self.pe(x)
         x = self.transformer(x)
         return self.to_logits(x)
     
