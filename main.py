@@ -42,11 +42,9 @@ if __name__ == "__main__":
     parser.add_argument("--cooling_rate", default=0.99, type=float, help="Optimizer parameter: cooling rate for simulated annealing")
     parser.add_argument("--min_temp", default=1e-3, type=float, help="Optimizer parameter: min temperature for simulated annealing")
 
-    # TODO: add description
     parser.add_argument("--random_vec", default=10, type=int, help="Optimizer parameter: for zero order method")
     parser.add_argument("--momentum", default=0.9, type=float, help="Optimizer parameter: for zero order method")
     parser.add_argument("--grad_mode", default="zeroth_order_rge", help="Optimizer parameter: for zero order method")
-    parser.add_argument("--v_step", default=10.0, type=float, help="Optimizer parameter: for zero order method")
 
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"] = "0"  # limiting to one GPU

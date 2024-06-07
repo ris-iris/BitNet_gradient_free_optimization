@@ -8,6 +8,8 @@ import math
 class SimulatedAnnealing(Optimizer):
     def __init__(self, model, loss_fn, initial_temp=100.0, cooling_rate=0.99, min_temp=1e-3, **kwargs) -> None:
         super().__init__(model, loss_fn)
+        self.model.eval()
+        
         self.max_temp = initial_temp
         self.current_temp = initial_temp
         self.cooling_rate = cooling_rate

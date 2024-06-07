@@ -6,6 +6,7 @@ from optim.adam import Adam
 from optim.mcmc import MCMC
 from optim.simple_ga import SimpleGA
 from optim.simulated_annealing import SimulatedAnnealing
+from optim.zeroth import ZAD
 
 
 from transformers import BertTokenizer
@@ -64,6 +65,8 @@ def get_optimizer(optimizer_name, model, loss_fn, opt_kwargs):
         return MCMC(model, loss_fn, **opt_kwargs)
     elif optimizer_name == "sim_annealing":
         return SimulatedAnnealing(model, loss_fn, **opt_kwargs)
+    elif optimizer_name == "zeroth":
+        return ZAD(model, loss_fn, **opt_kwargs)
     else:
         raise ValueError(f"Optimizer {optimizer_name} not supported")
 
