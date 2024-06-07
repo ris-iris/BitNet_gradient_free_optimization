@@ -18,7 +18,7 @@ class MCMC(Optimizer):
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         for layer in state_dict.keys():
             shape = state_dict[layer].shape
-            if 'emb' in layer:
+            if 'emb' in layer or 'to_logits' in layer or 'linear' in layer:
                 state_dict[layer] += self.emb_mutation(shape).to(device) * self.emb_mutation_scale
             else:
                 state_dict[layer] = torch.where(torch.rand(shape).to(device) < self.bin_mutation_prob, 1 - state_dict[layer], state_dict[layer])

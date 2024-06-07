@@ -45,11 +45,10 @@ if __name__ == "__main__":
     # TODO: add description
     parser.add_argument("--random_vec", default=10, type=int, help="Optimizer parameter: for zero order method")
     parser.add_argument("--momentum", default=0.9, type=float, help="Optimizer parameter: for zero order method")
-    parser.add_argument("--names", default=None, help="Optimizer parameter: for zero order method")
     parser.add_argument("--grad_mode", default="zeroth_order_rge", help="Optimizer parameter: for zero order method")
     parser.add_argument("--v_step", default=10.0, type=float, help="Optimizer parameter: for zero order method")
 
-
+    os.environ["WANDB_DISABLED"] = "true"
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"] = "0"  # limiting to one GPU
 

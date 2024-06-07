@@ -1,0 +1,34 @@
+program: main.py
+project: bitNet_gradient_free
+name: simple_ga_sweep
+method: random
+metric:
+  goal: minimize
+  name: eval/loss
+parameters:
+  bin_mutation_prob:
+    min: 0.2
+    max: 0.8
+  emb_mutation_scale:
+    min: 0.2
+    max: 2.0
+  population_size:
+    values: [32, 48, 64, 80]
+  treshold:
+    values: [5, 10, 15]
+
+command:
+  - ${env}
+  - python3.9
+  - ${program}
+  - "--dataset"
+  - "brackets"
+  - "--optimizer"
+  - "simple_ga"
+  - "--model"
+  - "bit_sa_transformer"
+  - "--track_ops"
+  - "True"
+  - ${args}
+
+  

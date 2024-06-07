@@ -24,7 +24,7 @@ class SimpleGA(Optimizer):
         for i in range(self.population_size):
             state_dict = {}
             for layer, shape in self.state_shape_dict.items():
-                if 'emb' in layer:
+                if 'emb' in layer or 'to_logits' in layer or 'linear' in layer:
                     state_dict[layer] = torch.randn(shape)
                 else:
                     state_dict[layer] = torch.bernoulli(0.5 * torch.ones(shape))
@@ -52,7 +52,7 @@ class SimpleGA(Optimizer):
         for idx in parent_choise:
             state_dict = self.population[idx].copy()
             for layer, shape in self.state_shape_dict.items():
-                if 'emb' in layer:
+                if 'emb' in layer or 'to_logits' in layer or 'linear' in layer:
                     state_dict[layer] += self.emb_mutation(shape) * self.emb_mutation_scale
                 else:
                     state_dict[layer] = torch.where(torch.rand(shape) < self.bin_mutation_prob, 1 - state_dict[layer], state_dict[layer])

@@ -57,3 +57,62 @@ Project organization:
         </tr>
     </tbody>
 </table>
+
+## Usage
+
+1. Install dependencies
+```
+pip install -r requirements.txt
+
+```
+2. Login to wandb
+```
+wandb login
+
+```
+3. Look at all the argumetns you can specify (copied main.py)
+
+| argument | possible values | description|
+|----------|-----------------|------------|
+|--dataset | "twitter", "addition", "brackets" | The dataset to use for training and testing. |
+|--batch_size | int | The batch size for training. |
+|--epochs | int | The number of epochs to train for. |
+|--optimizer | "adam", "simple_ga", "mcmc", "sim_annealing" | The optimizer to use for training. |
+|--seed | int | The random seed for reproducibility. |
+|--model | "bit_transformer", "bit_sa_transformer" | The model architecture to use for training. |
+|--max_length | int | The maximum sequence length for the model. |
+|--data_repo | "./data/" | The directory where the dataset is stored. |
+|--track_ops | bool | The flag that specifies if operations will be tracked. |
+|--lr | float | Adam Optimizer parameter: learning rate |
+|--beta1 |  float | Adam Optimizer parameter: beta1 for adam |
+|--beta2 | float | Adam Optimizer parameter: beta2 for adam |
+|--weight_decay | float | Adam Optimizer parameter: weight decay for adam |
+|--warmup_steps | int | Adam Optimizer parameter: warmup steps for adam |
+|--max_grad_norm | int | Adam Optimizer parameter: max grad norm for adam |
+|--population_size | int | Genetic Optimizer parameter: population size |
+|--treshold | int | Genetic Optimizer parameter: selection treshold |
+|--bin_mutation_prob | float | Genetic or MCMC Optimizer parameter: probability of mutating binary value |
+|--emb_mutation_scale | float | Genetic or MCMC Optimizer parameter: mutation scale for notmal mutaion of embeddings |
+|--initial_temp | float | Simulated annealing Optimizer parameter: initial temperature for simulated annealing |
+|--cooling_rate | float | Simulated annealing Optimizer parameter: cooling rate for simulated annealing |
+|--min_temp | float | Simulated annealing Optimizer parameter: min temperature for simulated annealing |
+|--random_vec | int | Zeroth-order Optimizer parameter: for zero order method |
+|--momentum | float | Zeroth-order Optimizer parameter: for zero order method |
+|--grad_mode | "zeroth_order_rge", "zeroth_order_forward-mode_AD", "zeroth_order_cge" | Zeroth-order Optimizer parameter: for zero order method |
+|--v_step | float | Zeroth-order Optimizer parameter: for zero order method |
+
+4. Run main.py with parameters of interest
+
+```
+python main.py --dataset twitter --optimizer simple_ga
+
+```
+
+### Hyperparameter tuning
+
+If you are interested in finding optimal hyperparameters for some algorithm, you can use `wandb sweep` to do it. We define several sweep configurations in the directory `hyperparams_opt`. To start sweep do:
+
+```
+wandb sweep hyperparams_opt/<config of interest>.yaml
+wandb agent --count <number of runs to try> <sweep_id>
+```
