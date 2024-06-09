@@ -39,7 +39,7 @@ class BracketTokenizer:
         Returns:
             List[str]: List of decoded tokens.
         """
-        tokens = [self.index_to_word[idx] for idx in sequence]
+        tokens = [self.index_to_word[idx] for idx in sequence.cpu().detach().numpy()]
         if skip_special_tokens:
             tokens = [token for token in tokens if token not in [self.pad_token, self.bos_token, self.eos_token, self.unk_token]]
         return tokens

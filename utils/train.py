@@ -88,7 +88,7 @@ def evaluate(eval_dataset, model, loss_fn, device, batch_size):
     eval_loss_accum = 0
     eval_step = 0
 
-    model.eval()
+    # model.eval()
 
     test_table = wandb.Table(columns=['input', 'labels'])
     decode_inputs = lambda x: eval_dataset.tokenizer.decode(x)

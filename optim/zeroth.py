@@ -63,7 +63,7 @@ class ZAD(Optimizer):
                             v.append(torch.randn(param.shape).to(self.device))
                             params_v[layer] = param + v[-1] * self.v_step
                         else:
-                            params_v[layer] = torch.where(torch.rand(param.shape) < self.mutation_prob, 1 - param, param)
+                            params_v[layer] = torch.where(torch.rand(param.shape) < self.mutation_prob, -param, param)
                             v.append(params_v[layer] - param)
                         
                     lossv = self.loss_fn(functional_call(self.model, params_v, input_ids), labels).item()
@@ -94,13 +94,13 @@ class ZAD(Optimizer):
                         params_v[key].data.view(-1)[param.numel()-1] -= self.v_step
                     else:
                         for j in range(param.numel()):
-                            v_step = -1 if params_v[key].data.view(-1)[j] == 1 else 1
+                            v_step = -2 if params_v[key].data.view(-1)[j] == 1 else 2
                             if j != 0:
-                                params_v[key].data.view(-1)[j-1] = 1 - params_v[key].data.view(-1)[j-1]
+                                params_v[key].data.view(-1)[j-1] *= -1
                             params_v[key].data.view(-1)[j] += v_step
                             loss_v = self.loss_fn(functional_call(self.model, params_v, input_ids), labels).item()
                             self.grad[i].view(-1)[j] += (1 - self.momentum) * (loss_v - loss.item()) / v_step
-                        params_v[key].data.view(-1)[param.numel()-1] -= 1 - params_v[key].data.view(-1)[param.numel()-1]
+                        params_v[key].data.view(-1)[param.numel()-1] *= -1
 
                 for layer, param, grad in zip(self.params_dict.keys(), self.params_data, self.grad):
                     if 'emb' in layer or 'to_logits' in layer or 'linear' in layer:

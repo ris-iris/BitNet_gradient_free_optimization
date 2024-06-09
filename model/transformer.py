@@ -56,6 +56,11 @@ class BitFeedForward(nn.Module):
 
     def forward(self, x):
         return self.ff(x)
+    
+    def eval(self):
+        for mod in self.ff:
+            mod.eval()
+        return super().eval()
 
 
 class BitMHA(nn.Module):
@@ -96,6 +101,11 @@ class BitMHA(nn.Module):
         x = self.projection(x)
 
         return x
+    
+    def eval(self):
+        self.qkv.eval()
+        self.projection.eval()
+        return super().eval()
 
 
 class Transformer(nn.Module):
@@ -145,6 +155,12 @@ class Transformer(nn.Module):
             x = x + skip
             x = ffn(x) + x
         return x
+    
+    def eval(self):
+        for attn, ffn in zip(self.layers, self.ffn_layers):
+            attn.eval()
+            ffn.eval()
+        return super().eval()
 
 # From pytorch docs
 class PositionalEncoding(nn.Module):
@@ -243,3 +259,9 @@ class BitNetTransformer(nn.Module):
 
     def num_params(self):
         return sum(p.numel() for p in self.parameters())
+    
+    def eval(self):
+        self.emb.eval()
+        self.transformer.eval()
+        self.to_logits.eval()
+        return super().eval()

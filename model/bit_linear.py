@@ -133,7 +133,7 @@ class BitLinear(nn.Linear):
 
     def eval(self):
         if not (self.training):
-            raise RuntimeError("model already in eval mode")
+            return super().eval()
 
         # weight quantization
         self.weight, self.weight_scale = weight_norm_quant(self.weight)

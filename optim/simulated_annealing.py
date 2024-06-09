@@ -73,7 +73,7 @@ class SimulatedAnnealing(Optimizer):
             if 'emb' in layer or 'to_logits' in layer or 'linear' in layer:
                 state_dict[layer] += torch.randn_like(state_dict[layer]) * self.current_temp
             else:
-                state_dict[layer] = torch.where(torch.rand(shape).to(device) < inv_prob, 1 - state_dict[layer], state_dict[layer])
+                state_dict[layer] = torch.where(torch.rand(shape).to(device) < inv_prob, -state_dict[layer], state_dict[layer])
 
         return state_dict
     

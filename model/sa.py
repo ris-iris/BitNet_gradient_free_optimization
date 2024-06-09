@@ -38,3 +38,8 @@ class SATransformer(nn.Module):
 
     def num_params(self):
         return sum(p.numel() for p in self.parameters())
+    
+    def eval(self):
+        self.transformer.eval()
+        self.linear.eval()
+        return super().eval()
