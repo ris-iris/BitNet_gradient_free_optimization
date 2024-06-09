@@ -95,7 +95,7 @@ class BitLinear(nn.Linear):
         super().__init__(in_features, out_features, bias, device, dtype)
 
         # parameter that we will have to train as well as weights
-        self.weight_scale = 1.0
+        self.weight_scale = torch.nn.Parameter(torch.ones(1))
 
     def forward(self, x: Tensor) -> Tensor:
         """
@@ -136,6 +136,8 @@ class BitLinear(nn.Linear):
             return super().eval()
 
         # weight quantization
-        self.weight, self.weight_scale = weight_norm_quant(self.weight)
+        self.weight, scale = weight_norm_quant(self.weight)
+        with torch.no_grad():
+            self.weight_scale[0] = scale
 
         return super().eval()

@@ -59,7 +59,7 @@ class ZAD(Optimizer):
                     params_v = {}
                     v = []
                     for layer, param in self.params_dict.items():
-                        if 'emb' in layer or 'to_logits' in layer or 'linear' in layer:
+                        if 'emb' in layer or 'to_logits' in layer or 'linear' in layer or 'weight_scale' in layer:
                             v.append(torch.randn(param.shape).to(self.device))
                             params_v[layer] = param + v[-1] * self.v_step
                         else:
@@ -71,10 +71,11 @@ class ZAD(Optimizer):
                     torch._foreach_add_(self.grad, v)
 
                 for layer, param, grad in zip(self.params_dict.keys(), self.params_data, self.grad):
-                    if 'emb' in layer or 'to_logits' in layer or 'linear' in layer:
+                    if 'emb' in layer or 'to_logits' in layer or 'linear' in layer or 'weight_scale' in layer:
                         param -= self.lr * grad
                     else:
-                        param = torch.where(torch.abs(self.lr * grad) >= 0.5, 1-param, param)
+                        ones = torch.ones_like(param)
+                        param = torch.where(torch.abs(self.lr * grad) + param > 0., ones, -ones)
 
 
         elif self.grad_mode == 'zeroth_order_cge':
@@ -84,7 +85,7 @@ class ZAD(Optimizer):
                 params_v = deepcopy(self.params_dict)
                 loss = self.loss_fn(functional_call(self.model, self.params_dict, input_ids), labels)
                 for i, (key, param) in enumerate(self.params_dict.items()):
-                    if 'emb' in layer or 'to_logits' in layer or 'linear' in layer:
+                    if 'emb' in layer or 'to_logits' in layer or 'linear' in layer or 'weight_scale' in layer:
                         for j in range(param.numel()):
                             if j != 0:
                                 params_v[key].data.view(-1)[j-1] -= self.v_step
@@ -103,10 +104,11 @@ class ZAD(Optimizer):
                         params_v[key].data.view(-1)[param.numel()-1] *= -1
 
                 for layer, param, grad in zip(self.params_dict.keys(), self.params_data, self.grad):
-                    if 'emb' in layer or 'to_logits' in layer or 'linear' in layer:
+                    if 'emb' in layer or 'to_logits' in layer or 'linear' in layer or 'weight_scale' in layer:
                         param -= self.lr * grad
                     else:
-                        param = torch.where(torch.abs(self.lr * grad) >= 0.5, 1-param, param) 
+                        ones = torch.ones_like(param)
+                        param = torch.where(torch.abs(self.lr * grad) + param > 0., ones, -ones)
 
         if track_ops:
             return loss, self.op_per_step(input_ids.shape[0], input_ids.shape[1])
