@@ -180,7 +180,7 @@ class PositionalEncoding(nn.Module):
         Arguments:
             x: Tensor, shape ``[batch_size, seq_len, embedding_dim]``
         """
-        return x + self.pe[:, x.size(1)]
+        return x + self.pe[:, :x.size(1)]
     
 # [MAIN MODEL] BitNetTransformer
 class BitNetTransformer(nn.Module):
