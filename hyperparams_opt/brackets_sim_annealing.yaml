@@ -1,0 +1,35 @@
+program: main.py
+project: bitNet_gradient_free
+name: brackets_sim_annealing
+method: random
+metric:
+  goal: minimize
+  name: eval/loss
+parameters:
+  initial_temp:
+    min: 1
+    max: 50
+  cooling_rate:
+    min: 0.8
+    max: 0.999
+  min_temp:
+    min: 0.00001
+    max: 0.001
+  batch_size:
+    values: [256, 2048]
+
+command:
+  - ${env}
+  - python3.9
+  - ${program}
+  - "--dataset"
+  - "brackets"
+  - "--optimizer"
+  - "sim_annealing"
+  - "--model"
+  - "bit_transformer"
+  - "--track_ops"
+  - "True"
+  - ${args}
+
+  

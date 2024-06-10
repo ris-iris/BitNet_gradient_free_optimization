@@ -55,10 +55,8 @@ def train(train_dataset, dev_dataset, optimizer, device, batch_size, epochs,
                 loss = optimizer.step(input_ids, labels)
                 wandb.log({"train/loss": loss})
 
-            if i == 0 and epoch == 0:
-                print("Initial Loss:", loss.mean().item())
-
             train_loss_accum += loss.mean().item()
+            print(loss)
 
         epoch_train_loss = train_loss_accum / epoch_train_step
 

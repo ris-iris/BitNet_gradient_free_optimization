@@ -1,5 +1,6 @@
 # implementation from https://github.com/kyegomez/BitNet/tree/main
 import torch
+import math
 
 from torch import nn, Tensor
 import torch.nn.functional as F
@@ -91,7 +92,7 @@ class BitLinear(nn.Linear):
 
     """
 
-    def __init__(self, in_features: int, out_features: int, bias: bool = True, device=None, dtype=None) -> None:
+    def __init__(self, in_features: int, out_features: int, bias: bool = False, device=None, dtype=None) -> None:
         super().__init__(in_features, out_features, bias, device, dtype)
 
         # parameter that we will have to train as well as weights
@@ -117,7 +118,7 @@ class BitLinear(nn.Linear):
             w_quant = w + (weight_quant(w) - w).detach()
             y = F.linear(x_quant, w_quant)
         else:
-            w_scale = self.weight_scale
+            w_scale = torch.exp(self.weight_scale)
             x_quant, x_scale = activation_norm_quant(x_norm)
 
             # TODO:replace F.linear with low dimension kernel
@@ -138,6 +139,6 @@ class BitLinear(nn.Linear):
         # weight quantization
         self.weight, scale = weight_norm_quant(self.weight)
         with torch.no_grad():
-            self.weight_scale[0] = scale
+            self.weight_scale[0] = math.log(scale)
 
         return super().eval()

@@ -19,7 +19,7 @@ class SATransformer(nn.Module):
         self.transformer = BitNetTransformer(
             dim=dim, depth=depth, heads=heads, ff_mult=ff_mult, num_tokens=num_tokens, output_dim=transformer_output_dim, max_length=max_length
         )
-        self.linear = nn.Linear(transformer_output_dim*max_length, output_dim)
+        self.label_pred = nn.Linear(transformer_output_dim*max_length, output_dim)
 
         # calculate MACs in one forward pass
         self.linear_macs = transformer_output_dim*max_length * output_dim
@@ -27,7 +27,7 @@ class SATransformer(nn.Module):
     def forward(self, x):
         x = self.transformer(x)
         x = x.flatten(1)
-        x = self.linear(x)
+        x = self.label_pred(x)
         return x
 
     def num_float_MACs(self, seq_length):
@@ -41,5 +41,5 @@ class SATransformer(nn.Module):
     
     def eval(self):
         self.transformer.eval()
-        self.linear.eval()
+        self.label_pred.eval()
         return super().eval()

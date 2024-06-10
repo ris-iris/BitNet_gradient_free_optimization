@@ -1,21 +1,30 @@
 program: main.py
 project: bitNet_gradient_free
-name: simple_ga_sweep
+name: brackets_adam
 method: random
 metric:
   goal: minimize
   name: eval/loss
 parameters:
-  bin_mutation_prob:
+  lr:
+    min: 0.0005
+    max: 0.1
+  beta1:
     min: 0.2
     max: 0.8
-  emb_mutation_scale:
-    min: 0.2
-    max: 2.0
-  population_size:
-    values: [32, 48, 64, 80]
-  treshold:
-    values: [5, 10, 15]
+  beta2:
+    min: 0.01
+    max: 1.0
+  weight_decay:
+    min: 0.01
+    max: 0.5
+  warmup_steps:
+    values: [-1, 128, 1024]
+  max_grad_norm:
+    min: 1
+    max: 10
+  batch_size:
+    values: [256, 2048]
 
 command:
   - ${env}
@@ -24,9 +33,9 @@ command:
   - "--dataset"
   - "brackets"
   - "--optimizer"
-  - "simple_ga"
+  - "adam"
   - "--model"
-  - "bit_sa_transformer"
+  - "bit_transformer"
   - "--track_ops"
   - "True"
   - ${args}

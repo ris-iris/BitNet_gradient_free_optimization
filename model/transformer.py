@@ -1,5 +1,6 @@
 from typing import Callable, Optional
 import math
+import collections
 
 import torch
 import torch.nn.functional as F
@@ -33,7 +34,6 @@ class BitFeedForward(nn.Module):
             swish: bool = False,
             post_act_ln: bool = False,
             dropout: float = 0.0,
-            no_bias: bool = False,
             *args,
             **kwargs
     ):
@@ -47,11 +47,13 @@ class BitFeedForward(nn.Module):
             activation = nn.GELU()
 
         self.ff = nn.Sequential(
-            BitLinear(dim, inner_dim, bias=not no_bias, *args, **kwargs),
-            activation,
-            nn.LayerNorm(inner_dim) if post_act_ln else None,
-            nn.Dropout(dropout),
-            BitLinear(inner_dim, dim_out, bias=not no_bias, *args, **kwargs),
+            collections.OrderedDict([
+                ('bit_linear_1', BitLinear(dim, inner_dim, *args, **kwargs)),
+                ('activation', activation),
+                ('layer_norm', nn.LayerNorm(inner_dim) if post_act_ln else None),
+                ('dropout', nn.Dropout(dropout)),
+                ('bit_linear_2', BitLinear(inner_dim, dim_out, *args, **kwargs)),
+            ])
         )
 
     def forward(self, x):

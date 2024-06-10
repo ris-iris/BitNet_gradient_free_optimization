@@ -1,0 +1,38 @@
+program: main.py
+project: bitNet_gradient_free
+name: brackets_zeroth
+method: random
+metric:
+  goal: minimize
+  name: eval/loss
+parameters:
+  lr:
+    min: 0.00001
+    max: 0.001
+  bin_mutation_prob:
+    min: 0.2
+    max: 0.8
+  momentum:
+    min: 0.0
+    max: 0.9
+  random_vec:
+    values: [8, 16, 32]
+  batch_size:
+    values: [256, 2048]
+
+
+command:
+  - ${env}
+  - python3.9
+  - ${program}
+  - "--dataset"
+  - "brackets"
+  - "--optimizer"
+  - "zeroth"
+  - "--model"
+  - "bit_transformer"
+  - "--track_ops"
+  - "True"
+  - ${args}
+
+  

@@ -75,8 +75,7 @@ class BracketDataset(Dataset):
             for sample in tqdm(reader.iter()):
                 # print(sample)
                 self.text_samples.append(sample)
-                input_ids = self.tokenizer.encode(sample['input'], max_length=sent_max_length)
-                
+                input_ids = self.tokenizer.encode(sample['input'], max_length=sent_max_length - 1)
                 self.samples.append({"ids": input_ids[:-1], "label": input_ids[1:]})
 
     def __len__(self):

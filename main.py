@@ -20,7 +20,7 @@ if __name__ == "__main__":
     parser.add_argument("--epochs", default=4, type=int, help="The number of epochs to train for.")
     parser.add_argument("--optimizer", default="adam", help="The optimizer to use for training.")
     parser.add_argument("--seed", default=42, type=int, help="The random seed for reproducibility.")
-    parser.add_argument("--model", default="bit_sa_transformer", help="The model architecture to use for training.")
+    parser.add_argument("--model", default="bit_transformer", help="The model architecture to use for training.")
     parser.add_argument("--max_length", default=128, type=int, help="The maximum sequence length for the model.")
     parser.add_argument("--data_repo", default="./data/", help="The directory where the dataset is stored.")
     parser.add_argument("--track_ops", default=False, type=bool, help="The flag that specifies if operations will be tracked.")
@@ -31,7 +31,7 @@ if __name__ == "__main__":
     parser.add_argument("--beta2", default=0.98, type=float, help="Optimizer parameter: beta2 for adam")
     parser.add_argument("--weight_decay", default=0.2, type=float, help="Optimizer parameter: weight decay for adam")
     parser.add_argument("--warmup_steps", default=-1, type=int, help="Optimizer parameter: warmup steps for adam")
-    parser.add_argument("--max_grad_norm", default=10, type=int, help="Optimizer parameter: max grad norm for adam")
+    parser.add_argument("--max_grad_norm", default=10, type=float, help="Optimizer parameter: max grad norm for adam")
 
     parser.add_argument("--population_size", default=50, type=int, help="Optimizer parameter: population size")
     parser.add_argument("--treshold", default=15, type=int, help="Optimizer parameter: selection treshold")

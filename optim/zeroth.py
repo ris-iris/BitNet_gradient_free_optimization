@@ -9,7 +9,7 @@ from torch.func import functional_call
 class ZAD(Optimizer):
     name = 'ZAD'
 
-    def __init__(self, model, criterion, lr=1e-3, random_vec=10, momentum=0.9, grad_mode='zeroth_order_rge', v_step=1, mutation_prob=0.5, threshold=1e-3, **kwargs):
+    def __init__(self, model, criterion, lr=1e-3, random_vec=10, momentum=0.9, grad_mode='zeroth_order_rge', v_step=1, bin_mutation_prob=0.5, threshold=1e-3, **kwargs):
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         super(ZAD, self).__init__(model, criterion)
         self.model.eval()
@@ -28,7 +28,7 @@ class ZAD(Optimizer):
         assert grad_mode in ['zeroth_order_rge', 'zeroth_order_cge']
         self.grad_mode = grad_mode
         self.v_step = v_step
-        self.mutation_prob = mutation_prob
+        self.bin_mutation_prob = bin_mutation_prob
 
     def op_per_step(self, batch_size, seq_length):
         if self.grad_mode == 'zeroth_order_rge':
@@ -53,25 +53,25 @@ class ZAD(Optimizer):
         if self.grad_mode == 'zeroth_order_rge':
             # we do integer randomized gradient estimation (RGE) with projected SGD
             torch._foreach_mul_(self.grad, self.momentum)
-            loss = self.loss_fn(functional_call(self.model, self.params_dict, input_ids), labels)
+            loss = self.loss_fn(functional_call(self.model, self.params_dict, input_ids).transpose(1, 2), labels)
 
             for _ in range(self.random_vec):
                 params_v = {}
                 v = []
                 for layer, param in self.params_dict.items():
-                    if 'emb' in layer or 'to_logits' in layer or 'linear' in layer or 'weight_scale' in layer:
+                    if 'emb' in layer or 'to_logits' in layer or 'label_pred' in layer or 'weight_scale' in layer:
                         v.append(torch.randn(param.shape).to(self.device))
                         params_v[layer] = param + v[-1] * self.v_step
                     else:
-                        params_v[layer] = torch.where(torch.rand(param.shape, device=self.device) < self.mutation_prob, -param, param)
+                        params_v[layer] = torch.where(torch.rand(param.shape, device=self.device) < self.bin_mutation_prob, -param, param)
                         v.append(params_v[layer] - param)
 
-                lossv = self.loss_fn(functional_call(self.model, params_v, input_ids), labels).item()
+                lossv = self.loss_fn(functional_call(self.model, params_v, input_ids).transpose(1, 2), labels).item()
                 torch._foreach_mul_(v, (1 - self.momentum) * (lossv - loss.item()) / (self.random_vec * self.v_step))
                 torch._foreach_add_(self.grad, v)
 
             for layer, param, grad in zip(self.params_dict.keys(), self.params_data, self.grad):
-                if 'emb' in layer or 'to_logits' in layer or 'linear' in layer or 'weight_scale' in layer:
+                if 'emb' in layer or 'to_logits' in layer or 'label_pred' in layer or 'weight_scale' in layer:
                     param -= self.lr * grad
                 else:
                     ones = torch.ones_like(param, device=self.device)
@@ -81,14 +81,14 @@ class ZAD(Optimizer):
             # we do integer coordinate-wise gradient estimation (CGE) with projected SGD
             torch._foreach_mul_(self.grad, self.momentum)
             params_v = deepcopy(self.params_dict)
-            loss = self.loss_fn(functional_call(self.model, self.params_dict, input_ids), labels)
+            loss = self.loss_fn(functional_call(self.model, self.params_dict, input_ids).transpose(1, 2), labels)
             for i, (key, param) in enumerate(self.params_dict.items()):
-                if 'emb' in key or 'to_logits' in key or 'linear' in key or 'weight_scale' in key:
+                if 'emb' in layer or 'to_logits' in layer or 'label_pred' in layer or 'weight_scale' in layer:
                     for j in range(param.numel()):
                         if j != 0:
                             params_v[key].data.view(-1)[j-1] -= self.v_step
                         params_v[key].data.view(-1)[j] += self.v_step
-                        loss_v = self.loss_fn(functional_call(self.model, params_v, input_ids), labels).item()
+                        loss_v = self.loss_fn(functional_call(self.model, params_v, input_ids).transpose(1, 2), labels).item()
                         self.grad[i].view(-1)[j] += (1 - self.momentum) * (loss_v - loss.item()) / self.v_step
                     params_v[key].data.view(-1)[param.numel()-1] -= self.v_step
                 else:
@@ -97,12 +97,12 @@ class ZAD(Optimizer):
                         if j != 0:
                             params_v[key].data.view(-1)[j-1] *= -1
                         params_v[key].data.view(-1)[j] += v_step
-                        loss_v = self.loss_fn(functional_call(self.model, params_v, input_ids), labels).item()
+                        loss_v = self.loss_fn(functional_call(self.model, params_v, input_ids).transpose(1, 2), labels).item()
                         self.grad[i].view(-1)[j] += (1 - self.momentum) * (loss_v - loss.item()) / v_step
                     params_v[key].data.view(-1)[param.numel()-1] *= -1
 
             for layer, param, grad in zip(self.params_dict.keys(), self.params_data, self.grad):
-                if 'emb' in layer or 'to_logits' in layer or 'linear' in layer or 'weight_scale' in layer:
+                if 'emb' in layer or 'to_logits' in layer or 'label_pred' in layer or 'weight_scale' in layer:
                     param -= self.lr * grad
                 else:
                     ones = torch.ones_like(param, device=self.device)

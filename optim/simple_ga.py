@@ -24,8 +24,13 @@ class SimpleGA(Optimizer):
         for i in range(self.population_size):
             state_dict = {}
             for layer, shape in self.state_shape_dict.items():
-                if 'emb' in layer or 'to_logits' in layer or 'linear' in layer or 'weight_scale' in layer:
+                if 'emb' in layer or 'to_logits' in layer or 'label_pred' in layer:
                     state_dict[layer] = torch.randn(shape)
+                elif 'layer_norm' in layer:
+                    if 'weight' in layer:
+                        state_dict[layer] = torch.ones(shape)
+                    else:
+                        state_dict[layer] = torch.zeros(shape)    
                 else:
                     state_dict[layer] = torch.bernoulli(0.5 * torch.ones(shape)) * 2 - 1
             self.population.append(state_dict)
@@ -39,8 +44,8 @@ class SimpleGA(Optimizer):
                 outputs = model.forward(input_ids)
                 if len(outputs.shape) == 3:
                     outputs = outputs.transpose(1, 2)
-                losses.append(self.loss_fn(outputs, labels))
-            losses = torch.tensor(losses)
+                losses.append(self.loss_fn(outputs, labels).item())
+            losses = torch.tensor(losses).nan_to_num(float('inf'))
             assert len(losses.shape) == 1, 'to many dimensions'
             self.model.load_state_dict(self.population[torch.argmin(losses)])
             self.parents_idx = torch.argsort(losses)[:self.treshold]
@@ -52,7 +57,7 @@ class SimpleGA(Optimizer):
         for idx in parent_choise:
             state_dict = self.population[idx].copy()
             for layer, shape in self.state_shape_dict.items():
-                if 'emb' in layer or 'to_logits' in layer or 'linear' in layer or 'weight_scale' in layer:
+                if 'emb' in layer or 'to_logits' in layer or 'label_pred' in layer or 'weight_scale' in layer:
                     state_dict[layer] += self.emb_mutation(shape) * self.emb_mutation_scale
                 else:
                     state_dict[layer] = torch.where(torch.rand(shape) < self.bin_mutation_prob, -state_dict[layer], state_dict[layer])
