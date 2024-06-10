@@ -214,8 +214,8 @@ class BitNetTransformer(nn.Module):
             dim: int,
             depth: int,
             num_tokens: int,
-            heads=8,
-            ff_mult=4,
+            heads=2,
+            ff_mult=1,
             output_dim: int = None,
             max_length=128
     ):

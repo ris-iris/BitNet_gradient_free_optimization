@@ -12,7 +12,7 @@ from optim.zeroth import ZAD
 from transformers import BertTokenizer
 
 from datasets.addition import AdditionDataset
-from datasets.bracket import BracketTokenizer
+from datasets.bracket import BracketTokenizer, BracketDataset
 from datasets.sa import SADataset
 
 
@@ -94,10 +94,9 @@ def get_dataset(dataset_name, data_repo=None, max_length=128):
         train_dataset, test_dataset = AdditionDataset(1024), AdditionDataset(128)
         vocab_size = 15
     elif dataset_name == "brackets":
-        labels = ['correct', 'incorrect']
         tokenizer = BracketTokenizer()
-        train_dataset = SADataset(data_repo + "/train_brackets_dataset.json", tokenizer, labels, max_length, is_simple=True)
-        test_dataset = SADataset(data_repo + "/test_brackets_dataset.json", tokenizer, labels, max_length, is_simple=True)
+        train_dataset = BracketDataset(data_repo + "/train_brackets_dataset.json", tokenizer, max_length)
+        test_dataset = BracketDataset(data_repo + "/test_brackets_dataset.json", tokenizer, max_length)
         vocab_size = len(tokenizer.vocab)
     else:
         raise ValueError("Invalid dataset name.")

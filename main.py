@@ -30,7 +30,7 @@ if __name__ == "__main__":
     parser.add_argument("--beta1", default=0.9, type=float, help="Optimizer parameter: beta1 for adam")
     parser.add_argument("--beta2", default=0.98, type=float, help="Optimizer parameter: beta2 for adam")
     parser.add_argument("--weight_decay", default=0.2, type=float, help="Optimizer parameter: weight decay for adam")
-    parser.add_argument("--warmup_steps", default=1024, type=int, help="Optimizer parameter: warmup steps for adam")
+    parser.add_argument("--warmup_steps", default=-1, type=int, help="Optimizer parameter: warmup steps for adam")
     parser.add_argument("--max_grad_norm", default=10, type=int, help="Optimizer parameter: max grad norm for adam")
 
     parser.add_argument("--population_size", default=50, type=int, help="Optimizer parameter: population size")
@@ -46,6 +46,7 @@ if __name__ == "__main__":
     parser.add_argument("--momentum", default=0.9, type=float, help="Optimizer parameter: for zero order method")
     parser.add_argument("--grad_mode", default="zeroth_order_rge", help="Optimizer parameter: for zero order method")
 
+    os.environ["WANDB_DISABLED"] = "true"
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"] = "0"  # limiting to one GPU
 
