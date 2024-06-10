@@ -62,6 +62,7 @@ class SimpleGA(Optimizer):
         new_population.append(self.population[self.parents_idx[0]])
         self.population = new_population
 
+    @torch.no_grad()
     def step(self, input_ids, labels, track_ops=False):
         self.__mutate()
         loss = self.__eval(input_ids, labels)

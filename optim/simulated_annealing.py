@@ -19,6 +19,7 @@ class SimulatedAnnealing(Optimizer):
         self.best_params = copy.deepcopy(model.state_dict())
         self.best_loss = float('inf')
 
+    @torch.no_grad()
     def step(self, input_ids, labels, track_ops=False):
         # Evaluate the current model's loss
         outputs = self.model(input_ids)

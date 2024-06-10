@@ -26,7 +26,8 @@ class MCMC(Optimizer):
                 state_dict[layer] = torch.where(torch.rand(shape).to(device) < self.bin_mutation_prob, -state_dict[layer], state_dict[layer])
 
         return state_dict
-    
+
+    @torch.no_grad()
     def step(self, input_ids, labels, track_ops=False):
         if self.temp_f == -1:
             outputs = self.model.forward(input_ids)

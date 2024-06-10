@@ -16,7 +16,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     # Add arguments to the parser
     parser.add_argument("--dataset", default="brackets", help="The dataset to use for training and testing.")
-    parser.add_argument("--batch_size", default=30, type=int, help="The batch size for training.")
+    parser.add_argument("--batch_size", default=2048, type=int, help="The batch size for training.")
     parser.add_argument("--epochs", default=4, type=int, help="The number of epochs to train for.")
     parser.add_argument("--optimizer", default="adam", help="The optimizer to use for training.")
     parser.add_argument("--seed", default=42, type=int, help="The random seed for reproducibility.")
