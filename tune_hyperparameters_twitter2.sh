@@ -22,5 +22,6 @@ run_sweep_and_agent () {
 # list of sweeps to call
 
 run_sweep_and_agent "twitter_mcmc"
+run_sweep_and_agent "twitter_mcmc"
 run_sweep_and_agent "twitter_sim_annealing"
 run_sweep_and_agent "twitter_zeroth"

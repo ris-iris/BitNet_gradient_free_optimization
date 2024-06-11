@@ -21,4 +21,5 @@ run_sweep_and_agent () {
 
 # list of sweeps to call
 run_sweep_and_agent "twitter_adam"
+run_sweep_and_agent "twitter_adam"
 run_sweep_and_agent "twitter_simple_ga"
