@@ -10,7 +10,7 @@ run_sweep_and_agent () {
   wandb sweep --project "$PROJECT_NAME" --name "$SWEEP_NAME" "hyperparams_opt/$SWEEP_NAME.yaml" >temp_output.txt 2>&1
   
   # Extract the sweep ID using awk
-  SWEEP_ID=$(awk '/wandb agent/{ match($0, /wandb agent (.+)/, arr); print arr[1]; }' temp_output.txt)
+  SWEEP_ID=$(cat temp_output.txt | sed -n 's/.*wandb: Run sweep agent with: wandb agent \(.*\)/\1/p')
   
   # Remove the temporary output file
   rm temp_output.txt
