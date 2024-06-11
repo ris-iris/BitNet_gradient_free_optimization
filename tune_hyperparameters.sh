@@ -21,7 +21,7 @@ run_sweep_and_agent () {
 
 # list of sweeps to call
 run_sweep_and_agent "brackets_adam"
-run_sweep_and_agent "brackets_mcmc"
-run_sweep_and_agent "brackets_sim_annealing"
+#run_sweep_and_agent "brackets_mcmc"
+#run_sweep_and_agent "brackets_sim_annealing"
 run_sweep_and_agent "brackets_simple_ga"
-run_sweep_and_agent "brackets_zeroth"
+#run_sweep_and_agent "brackets_zeroth"
