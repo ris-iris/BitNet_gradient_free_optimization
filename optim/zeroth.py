@@ -53,7 +53,11 @@ class ZAD(Optimizer):
         if self.grad_mode == 'zeroth_order_rge':
             # we do integer randomized gradient estimation (RGE) with projected SGD
             torch._foreach_mul_(self.grad, self.momentum)
-            loss = self.loss_fn(functional_call(self.model, self.params_dict, input_ids).transpose(1, 2), labels)
+            output = functional_call(self.model, self.params_dict, input_ids)
+            if output.dim() == 3:
+                loss = self.loss_fn(output.transpose(1, 2), labels)
+            else:
+                loss = self.loss_fn(output, labels)
 
             for _ in range(self.random_vec):
                 params_v = {}
