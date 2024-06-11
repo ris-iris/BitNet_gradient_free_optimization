@@ -29,7 +29,7 @@ command:
   - "--optimizer"
   - "sim_annealing"
   - "--model"
-  - "bit_transformer"
+  - "bit_sa_transformer"
   - "--track_ops"
   - "True"
   - ${args}

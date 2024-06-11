@@ -47,7 +47,7 @@ def get_model(model_name, vocab_size, max_length=None, output_dim=None):
     Get the model for the specified task.
     """
     if model_name == "bit_transformer":
-        return BitNetTransformer(64, 2, vocab_size, 2)
+        return BitNetTransformer(64, 2, vocab_size, 2, max_length=max_length)
     elif model_name == "bit_sa_transformer":
         return SATransformer(dim=64, depth=2, num_tokens=vocab_size, transformer_output_dim=output_dim, output_dim=output_dim, max_length=max_length)
     else:
