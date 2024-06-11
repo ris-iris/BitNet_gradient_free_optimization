@@ -65,8 +65,11 @@ class ZAD(Optimizer):
                     else:
                         params_v[layer] = torch.where(torch.rand(param.shape, device=self.device) < self.bin_mutation_prob, -param, param)
                         v.append(params_v[layer] - param)
-
-                lossv = self.loss_fn(functional_call(self.model, params_v, input_ids).transpose(1, 2), labels).item()
+                output = functional_call(self.model, params_v, input_ids)
+                if output.dim() == 3:
+                    lossv = self.loss_fn(output.transpose(1, 2), labels).item()
+                else:
+                    lossv = self.loss_fn(output, labels).item()
                 torch._foreach_mul_(v, (1 - self.momentum) * (lossv - loss.item()) / (self.random_vec * self.v_step))
                 torch._foreach_add_(self.grad, v)
 
