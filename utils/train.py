@@ -58,7 +58,7 @@ def train(train_dataset, dev_dataset, optimizer, device, batch_size, epochs,
                 # wandb.log({"train/loss": loss})
 
             train_loss_accum += loss.mean().item()
-            print(f'Epoch: {epoch} | Step: {i} | Loss: {loss.mean().item()}', end='\r')
+            print(f'Epoch: {epoch} | Step: {i} | Loss: {loss.mean().item()}')
 
         epoch_train_loss = train_loss_accum / epoch_train_step
         if track_ops:
