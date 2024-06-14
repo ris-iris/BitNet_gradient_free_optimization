@@ -5,6 +5,9 @@ from transformers import get_constant_schedule_with_warmup
 from optim.oprimizer import Optimizer
 
 class Adam(Optimizer):
+    """
+    Adam optimizer for BitNet.
+    """
     def __init__(self, model, loss_fn, max_grad_norm, lr=1e-4, beta1=0.9, beta2=0.98, weight_decay=0.2, warmup_steps=-1, **kwargs) -> None:
         super().__init__(model, loss_fn)
 

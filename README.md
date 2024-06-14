@@ -26,7 +26,7 @@ Project organization:
             <td> Transformer based classifier for sentiment analysis</td>
         </tr>
         <tr>
-            <td rowspan=4>optim</td>
+            <td rowspan=5>optim</td>
             <td>adam.py </td>
             <td> Baseline adam optimizer </td>
         </tr>
@@ -41,6 +41,10 @@ Project organization:
         <tr>
             <td> simulated_annealing.py</td>
             <td> Simulated annealing </td>
+        </tr>
+        <tr>
+            <td> zeroth.py</td>
+            <td> Zeroth order </td>
         </tr>
         <tr>
             <td rowspan=3>datasets</td>

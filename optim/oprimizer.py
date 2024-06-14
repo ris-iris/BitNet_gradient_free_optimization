@@ -1,4 +1,7 @@
 class Optimizer:
+    """
+    Base class for all optimizers.
+    """
     def __init__(self, model, loss_fn) -> None:
         self.model = model
         self.loss_fn = loss_fn

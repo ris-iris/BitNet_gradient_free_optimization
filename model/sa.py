@@ -4,6 +4,9 @@ from model.transformer import Transformer, BitNetTransformer
 
 
 class SATransformer(nn.Module):
+    """
+    Sentiment Classification Transformer model for BitNet.
+    """
     def __init__(
             self,
             dim: int,

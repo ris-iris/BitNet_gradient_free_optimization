@@ -7,6 +7,9 @@ from torch.func import functional_call
 
 
 class ZAD(Optimizer):
+    """
+    Zeroth-order (RGE) optimizer for BitNet.
+    """
     name = 'ZAD'
 
     def __init__(self, model, criterion, lr=1e-3, random_vec=10, momentum=0.9, grad_mode='zeroth_order_rge', v_step=1, bin_mutation_prob=0.5, threshold=1e-3, **kwargs):
