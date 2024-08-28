@@ -4,6 +4,9 @@ from torch import nn
 from optim.oprimizer import Optimizer
 
 class MCMC(Optimizer):
+    """
+    MCMC optimizer for BitNet.
+    """
     def __init__(self, model, loss_fn, bin_mutation_prob=0.5, emb_mutation_scale=1, **kwargs) -> None:
         super().__init__(model, loss_fn)
         self.model.eval()

@@ -7,6 +7,9 @@ from torch.func import functional_call
 
 
 class ZAD(Optimizer):
+    """
+    Zeroth-order (RGE) optimizer for BitNet.
+    """
     name = 'ZAD'
 
     def __init__(self, model, criterion, lr=1e-3, random_vec=10, momentum=0.9, grad_mode='zeroth_order_rge', v_step=1, bin_mutation_prob=0.5, threshold=1e-3, **kwargs):
@@ -53,7 +56,11 @@ class ZAD(Optimizer):
         if self.grad_mode == 'zeroth_order_rge':
             # we do integer randomized gradient estimation (RGE) with projected SGD
             torch._foreach_mul_(self.grad, self.momentum)
-            loss = self.loss_fn(functional_call(self.model, self.params_dict, input_ids).transpose(1, 2), labels)
+            output = functional_call(self.model, self.params_dict, input_ids)
+            if output.dim() == 3:
+                loss = self.loss_fn(output.transpose(1, 2), labels)
+            else:
+                loss = self.loss_fn(output, labels)
 
             for _ in range(self.random_vec):
                 params_v = {}
@@ -65,8 +72,11 @@ class ZAD(Optimizer):
                     else:
                         params_v[layer] = torch.where(torch.rand(param.shape, device=self.device) < self.bin_mutation_prob, -param, param)
                         v.append(params_v[layer] - param)
-
-                lossv = self.loss_fn(functional_call(self.model, params_v, input_ids).transpose(1, 2), labels).item()
+                output = functional_call(self.model, params_v, input_ids)
+                if output.dim() == 3:
+                    lossv = self.loss_fn(output.transpose(1, 2), labels).item()
+                else:
+                    lossv = self.loss_fn(output, labels).item()
                 torch._foreach_mul_(v, (1 - self.momentum) * (lossv - loss.item()) / (self.random_vec * self.v_step))
                 torch._foreach_add_(self.grad, v)
 

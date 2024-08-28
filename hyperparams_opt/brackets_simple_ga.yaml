@@ -1,6 +1,6 @@
 program: main.py
 project: bitNet_gradient_free
-name: twitter_simple_ga
+name: brackets_simple_ga
 method: random
 metric:
   goal: minimize
@@ -24,13 +24,11 @@ command:
   - python3
   - ${program}
   - "--dataset"
-  - "twitter"
-  - "--epochs"
-  - "6"
+  - "brackets"
   - "--optimizer"
   - "simple_ga"
   - "--model"
-  - "bit_sa_transformer"
+  - "bit_transformer"
   - "--track_ops"
   - "True"
   - ${args}

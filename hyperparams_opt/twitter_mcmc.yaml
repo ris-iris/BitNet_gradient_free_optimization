@@ -1,6 +1,6 @@
 program: main.py
 project: bitNet_gradient_free
-name: twitter_simple_ga
+name: brackets_mcmc
 method: random
 metric:
   goal: minimize
@@ -12,10 +12,6 @@ parameters:
   emb_mutation_scale:
     min: 0.01
     max: 1.0
-  population_size:
-    values: [32, 48, 64, 128]
-  treshold:
-    values: [8, 16, 32]
   batch_size:
     values: [256, 2048]
 
@@ -28,7 +24,7 @@ command:
   - "--epochs"
   - "6"
   - "--optimizer"
-  - "simple_ga"
+  - "mcmc"
   - "--model"
   - "bit_sa_transformer"
   - "--track_ops"

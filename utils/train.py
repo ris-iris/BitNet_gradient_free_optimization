@@ -35,11 +35,12 @@ def train(train_dataset, dev_dataset, optimizer, device, batch_size, epochs,
     log_freq = 20
     # save_repo = model_save_root + 'lr{}-warmup{}'.format(learning_rate, warmup_percent)
 
+    evaluate(dev_dataset, optimizer.model, optimizer.loss_fn, device, batch_size, 0)
     for epoch in range(epochs):
 
         train_loss_accum = 0.0
         epoch_train_step = 0
-
+        track_ops_accum = []
         for i, batch in enumerate(tqdm(train_dataloader, desc="Training")):
             epoch_train_step += 1
             total_train_step += 1
@@ -50,23 +51,30 @@ def train(train_dataset, dev_dataset, optimizer, device, batch_size, epochs,
             if track_ops:
                 loss, ops = optimizer.step(input_ids, labels, True)
                 ops['loss'] = loss
-                wandb.log({"train/" + k : v for k, v in ops.items()})
+                # wandb.log({"train/" + k : v for k, v in ops.items()})
+                track_ops_accum.append(ops)
             else:
                 loss = optimizer.step(input_ids, labels)
-                wandb.log({"train/loss": loss})
+                # wandb.log({"train/loss": loss})
 
             train_loss_accum += loss.mean().item()
+            # print(f'Epoch: {epoch} | Step: {i} | Loss: {loss.mean().item()}')
 
         epoch_train_loss = train_loss_accum / epoch_train_step
+        if track_ops:
+            ops = {k: sum([op[k] for op in track_ops_accum]) / len(track_ops_accum) for k in track_ops_accum[0].keys()}
+            wandb.log({"train/" + k: v for k, v in ops.items()} | {"epoch": epoch+1})
+        else:
+            wandb.log({"train/loss": epoch_train_loss, "epoch": epoch+1})
 
         # epoch evaluation
-        dev_loss = evaluate(dev_dataset, optimizer.model, optimizer.loss_fn, device, batch_size)
+        dev_loss = evaluate(dev_dataset, optimizer.model, optimizer.loss_fn, device, batch_size, epoch + 1)
 
         print(f'Epoch: {epoch} | Training Loss: {epoch_train_loss:.3f} | Validation Loss: {dev_loss:.3f}')
         
 
 
-def evaluate(eval_dataset, model, loss_fn, device, batch_size):
+def evaluate(eval_dataset, model, loss_fn, device, batch_size, epoch):
     '''
     Evaluate the trained model.
 
@@ -110,9 +118,10 @@ def evaluate(eval_dataset, model, loss_fn, device, batch_size):
             if len(outputs.shape) == 3:
                 outputs = outputs.transpose(1, 2)
             loss = loss_fn(outputs, labels)
-            wandb.log({"eval/loss": loss})
+            # wandb.log({"eval/loss": loss})
 
             eval_loss_accum += loss.mean().item()
+    wandb.log({"eval/loss": eval_loss_accum / eval_step, "epoch": epoch})
 
     # log last batch
     for i in range(input_ids.shape[0]):
