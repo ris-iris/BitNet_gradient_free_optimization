@@ -2,7 +2,10 @@
 
 Implementation of several gradient-free optimization methods for BitNet - an extremely quantized Transformer model.
 
-Project organization:
+## Results
+Please refer to the [project report](report/report.pdf)
+
+## Project organization
 <table>
     <thead>
         <tr>
